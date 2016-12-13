@@ -49,6 +49,8 @@
 		<Unit filename="src/strain.hpp" />
 		<Unit filename="src/testing.cpp" />
 		<Unit filename="src/testing.hpp" />
+		<Unit filename="src/tmp_simulations.cpp" />
+		<Unit filename="src/tmp_simulations.hpp" />
 		<Unit filename="src/utilities.cpp" />
 		<Unit filename="src/utilities.hpp" />
 		<Extensions>

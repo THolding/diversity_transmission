@@ -3,17 +3,26 @@
 #include "model_driver.hpp"
 #include "testing.hpp"
 #include <fstream>
+#include "tmp_simulations.hpp"
 
 std::string RUN_NAME = "default";
 std::string FILE_PATH = "";
-bool VERBOSE = true;
+bool VERBOSE = false;
 
 unsigned int RUN_TIME = 5000;
 unsigned int OUTPUT_INTERVAL = 500;
 unsigned int BURN_IN_PERIOD = 2000; //Recombination only allowed after this period.
 
+
+bool DYN_NUM_MOSQUITOES = false;
+unsigned int NUM_MOSQUITOES_MAX = 0;
+unsigned int START_MOS_INC = 0; //time point in days
+unsigned int STOP_MOS_INC = 0; //time point in days
+unsigned int START_MOS_DCR = 0; //time point in days
+unsigned int STOP_MOS_DCR = 0; //time point in days
+
 unsigned int NUM_HOSTS = 5000;
-unsigned int NUM_MOSQUITOES = 10000;
+unsigned int NUM_MOSQUITOES = 5000;
 unsigned int INITIAL_ANTIGEN_DIVERSITY = 2*60; //Number of antigen variants sampled to provide initial antigen diversity.
 unsigned int INITIAL_NUM_STRAINS = 4; //Number of strains which are constructed from the initial antigen pool at the start of simulation. Used to initialise initial infections.
 unsigned int INITIAL_NUM_MOSQUITO_INFECTIONS = 1000;
@@ -30,16 +39,16 @@ float BITE_RATE = 0.2f; //Daily probability of mosquito biting.
 
 float INTERGENIC_RECOMBINATION_P = 0.1f; //Per gene intergenic recombination probability (swap genes).
 float INTRAGENIC_RECOMBINATION_P = 0.2f; //Per gene intragenic recombination probability (hybrid gene).
-std::array<float, 2> RECOMBINATION_CUMU_P = {INTERGENIC_RECOMBINATION_P, INTERGENIC_RECOMBINATION_P+INTRAGENIC_RECOMBINATION_P};
+std::array<float, 2> RECOMBINATION_CUMU_P = { INTERGENIC_RECOMBINATION_P, INTERGENIC_RECOMBINATION_P+INTRAGENIC_RECOMBINATION_P };
 float RECOMBINATION_SCALE = 600.0f; //Scales the degree of genotypic change resulting from intragenic recombination
 
 float INFECTION_DURATION_SCALE = 1.0;
-float INFECTIVITY_SCALE = 0.0001;//0.25;
+float INFECTIVITY_SCALE = 0.1;
 
 
 bool set_globals_from_cmd(int argc, char* argv[]);
 bool parse_cmd_argument(const std::string& token, const std::string& value);
-void recalc_derived_parameters(); //Some parameters aren't set directly but depend on others. After setting parameters these must be recalculated.
+bool recalc_derived_parameters(); //Some parameters aren't set directly but depend on others. After setting parameters these must be recalculated.
 
 int main(int argc, char* argv[])
 {
@@ -48,6 +57,8 @@ int main(int argc, char* argv[])
 
     ModelDriver model;
     model.run_model();
+
+    //run_dyn_mosquitoes();
 
     //testing::run_tests();
 
@@ -112,6 +123,21 @@ bool parse_cmd_argument(const std::string& token, const std::string& value)
         else
             VERBOSE = false;
     }
+    else if (token == "dyn_num_mosquitoes")
+    {
+        if (value == "true") DYN_NUM_MOSQUITOES = true;
+        else DYN_NUM_MOSQUITOES = false;
+    }
+    else if (token == "num_mosquitoes_max")
+        NUM_MOSQUITOES_MAX = stoi(value);
+    else if (token == "start_mos_inc")
+        START_MOS_INC = stoi(value);
+    else if (token == "stop_mos_inc")
+        STOP_MOS_INC = stoi(value);
+    else if (token == "start_mos_dcr")
+        START_MOS_DCR = stoi(value);
+    else if (token == "stop_mos_dcr")
+        STOP_MOS_DCR = stoi(value);
     else
     {
         std::cout << "\n\nUnrecognised parameter token!\n";
@@ -146,7 +172,11 @@ bool set_globals_from_cmd(int argc, char* argv[])
             return false;
         }
     }
-    recalc_derived_parameters(); //Some parameters are derived from others, now user parameters have changed these need calculating.
+    if (recalc_derived_parameters() == false) //Some parameters are derived from others, now user parameters have changed these need calculating.
+    {
+        std::cout << "ERROR: Cannot set derived parameters - this indicates inconsistent parameter states e.g. stop time before start time in dynamic parameters.\n";
+        return false; //but sometimes this is impossible, indicating incorrect parameters.
+    }
 
     //Write called arguments to file
     std::ofstream file;
@@ -161,8 +191,24 @@ bool set_globals_from_cmd(int argc, char* argv[])
 }
 
 //Some parameters aren't set directly but depend on others. After setting parameters these must be recalculated.
-void recalc_derived_parameters()
+bool recalc_derived_parameters()
 {
     RECOMBINATION_CUMU_P = {INTERGENIC_RECOMBINATION_P, INTERGENIC_RECOMBINATION_P+INTRAGENIC_RECOMBINATION_P};
     GENOTYPIC_SPACE_SIZE = std::numeric_limits<unsigned int>::max(); //Total genotypic space across all phenotypes.
+
+    //Dynamic mosquito population
+    if (DYN_NUM_MOSQUITOES) {
+        if (NUM_MOSQUITOES_MAX == 0)
+            return false;
+        if (BURN_IN_PERIOD > START_MOS_INC)
+            return false;
+        if (START_MOS_INC > STOP_MOS_INC)
+            return false;
+        if (START_MOS_DCR > STOP_MOS_DCR)
+            return false;
+        if (STOP_MOS_DCR > RUN_TIME)
+            return false;
+    }
+
+    return true;
 }

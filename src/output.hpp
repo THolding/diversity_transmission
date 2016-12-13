@@ -2,11 +2,15 @@
 #include "host.hpp"
 #include "mosquito.hpp"
 
+class ModelDriver;
+
 class Output
 {
 private:
     typedef std::vector<Host> Hosts;
     typedef std::vector<Mosquito> Mosquitoes;
+
+    ModelDriver* model;
 
     std::vector<unsigned int> timeLog;
 
@@ -22,6 +26,8 @@ private:
 
     std::vector<float> eir;
 
+    std::vector<unsigned int> numMosquitoesList;
+
     //Counters
     unsigned int curNumInfectiousBites;
 
@@ -34,8 +40,10 @@ private:
     float calc_antigen_host_diversity(const Hosts& hosts);
 
     float calc_eir();
+    void log_dyn_params();
 
 public:
+    Output(ModelDriver* _model) : model(_model) {  }
     void preinitialise_output_storage(const unsigned int numTimeSteps, const unsigned int outputInterval);
     void append_output(const unsigned int timestep, const Hosts& hosts, const Mosquitoes& mosquitoes);
     void export_output(const std::string runName=RUN_NAME, const std::string filePath=FILE_PATH);

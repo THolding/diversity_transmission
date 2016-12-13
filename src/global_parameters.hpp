@@ -10,6 +10,14 @@ extern unsigned int RUN_TIME;
 extern unsigned int OUTPUT_INTERVAL;
 extern unsigned int BURN_IN_PERIOD; //Recombination only allowed after this period.
 
+//Dyanmic mosquito population size
+extern bool DYN_NUM_MOSQUITOES;
+extern unsigned int NUM_MOSQUITOES_MAX;
+extern unsigned int START_MOS_INC; //time point in days
+extern unsigned int STOP_MOS_INC; //time point in days
+extern unsigned int START_MOS_DCR; //time point in days
+extern unsigned int STOP_MOS_DCR; //time point in days
+
 extern unsigned int NUM_HOSTS;
 extern unsigned int NUM_MOSQUITOES;
 extern unsigned int INITIAL_ANTIGEN_DIVERSITY; //Number of antigen variants sampled to provide initial antigen diversity.

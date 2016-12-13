@@ -43,6 +43,7 @@ void Mosquito::age_mosquito(const PTABLE& pDeath)
         kill();
 }
 
+//killed and reborn
 void Mosquito::kill()
 {
     age = 0;

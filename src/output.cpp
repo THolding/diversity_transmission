@@ -1,4 +1,5 @@
 #include "output.hpp"
+#include "model_driver.hpp"
 #include "strain.hpp"
 #include "utilities.hpp"
 #include <cmath>
@@ -22,6 +23,9 @@ void Output::preinitialise_output_storage(const unsigned int numTimeSteps, const
     antigenicHostDiversity.reserve(sizeNeeded);
 
     eir.reserve(sizeNeeded);
+
+    if (DYN_NUM_MOSQUITOES)
+        numMosquitoesList.reserve(sizeNeeded);
 
     curNumInfectiousBites = 0;
 }
@@ -48,6 +52,9 @@ void Output::append_output(const unsigned int timestep, const Hosts& hosts, cons
     antigenicHostDiversity.push_back(calc_antigen_host_diversity(hosts));
 
     eir.push_back(calc_eir()); //Used callback counter and self-resets.
+
+    if (DYN_NUM_MOSQUITOES || DYN_NUM_MOSQUITOES)
+        log_dyn_params();
 }
 
 void Output::export_output(const std::string runName, const std::string filePath)
@@ -65,6 +72,9 @@ void Output::export_output(const std::string runName, const std::string filePath
     utilities::arrayToFile(antigenicHostDiversity, filePath+runName+"_antigenic_host_diversity.csv");
 
     utilities::arrayToFile(eir, filePath+runName+"_eir.csv");
+
+    if (DYN_NUM_MOSQUITOES)
+        utilities::arrayToFile(numMosquitoesList, filePath+runName+"_num_mosquitoes.csv");
 }
 
 void Output::register_infectious_bite()
@@ -104,7 +114,7 @@ void Output::calc_mosquito_infection_metrics(const Mosquitoes& mosquitoes, float
         //Count number of mosquitoes that are infected
         prevalence += mosquito.is_infected();
     }
-    prevalence = prevalence / NUM_MOSQUITOES;
+    prevalence = prevalence / model->get_mos_manager()->get_count();
 }
 
 void Output::calc_host_immunity_metrics(const Hosts& hosts, float& immunityMean, float& immunityVariance)
@@ -200,4 +210,10 @@ float Output::calc_eir()
     curNumInfectiousBites = 0;
 
     return eir;
+}
+
+void Output::log_dyn_params()
+{
+    if (DYN_NUM_MOSQUITOES)
+        numMosquitoesList.push_back(model->get_mos_manager()->get_count());
 }

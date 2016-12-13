@@ -2,6 +2,7 @@
 #include "demographic_tools.hpp"
 #include "strain.hpp"
 #include "utilities.hpp"
+#include <cmath>
 #include <vector>
 
 void ModelDriver::initialise_model()
@@ -30,14 +31,17 @@ void ModelDriver::initialise_model()
 
     //Initialise mosquitoes
     std::cout << "initialising mosquito demographics" << std::endl;
-    mosquitoes.reserve(NUM_MOSQUITOES);
+    mosquitoes.reserve(NUM_MOSQUITOES_MAX);
     for (unsigned int m=0; m<NUM_MOSQUITOES; ++m)
     {
         Mosquito mosquito;
         mosquito.kill();
         mosquito.age = random_mosquito_equilibrium_age(cdfMosquitoes);
+        mosquito.active = true;
         mosquitoes.push_back(mosquito);
     }
+
+    mManager.initialise(&mosquitoes);
 
     //Generate initial pool of antigen diversity
     std::cout << "initialising antigen pool" << std::endl;
@@ -58,7 +62,7 @@ void ModelDriver::initialise_model()
     for (unsigned int i=0; i<INITIAL_NUM_MOSQUITO_INFECTIONS; ++i)
     {
         unsigned int iS = utilities::urandom(0, initialStrainPool.size());
-        unsigned int iM = utilities::urandom(0, NUM_MOSQUITOES);
+        unsigned int iM = mManager.random_active_mos();
         mosquitoes[iM].infect(initialStrainPool[iS], false);
     }
 }
@@ -84,6 +88,9 @@ void ModelDriver::run_model()
             if (burnInPeriod > 0)
                 std::cout << "burnIn left: " << burnInPeriod << ". ";
         }
+
+        //Dynamic parameters
+        update_parameters(time);
 
         //Host demographics
         //std::cout << "aging hosts...\n";
@@ -175,4 +182,102 @@ void ModelDriver::feed_mosquitoes()
     }
 }
 
+//Updates dynamic parameters
+void ModelDriver::update_parameters(const unsigned int time)
+{
+    if (DYN_NUM_MOSQUITOES == true)
+    {
+        if (time >= START_MOS_INC && time < STOP_MOS_INC)
+        {
+            int numLeftToAdd = NUM_MOSQUITOES_MAX - mManager.get_count();
+            int timeLeftToAdd = STOP_MOS_INC - time;
+            float fractionToAdd = (float)numLeftToAdd / (float)timeLeftToAdd;
+            mosChangeRemainder += fractionToAdd;
+            int toAdd = std::floor(mosChangeRemainder);
+            mosChangeRemainder -= toAdd;
+            mManager.add_mosquito(toAdd);
+            if (VERBOSE || (!VERBOSE && time % OUTPUT_INTERVAL == 0))
+                std::cout << "Mosquitoes added: " << toAdd << ", leftToAdd: " << numLeftToAdd << ", timeLeftToAdd: " << timeLeftToAdd << ", total: " << mManager.get_count() << "\n";
+        }
 
+        if (time >= START_MOS_DCR && time < STOP_MOS_DCR)
+        {
+            int numLeftToRemove = mManager.get_count() - NUM_MOSQUITOES;
+            int timeLeftToRemove = STOP_MOS_DCR - time;
+            float fractionToRemove = (float)numLeftToRemove / (float)timeLeftToRemove;
+            mosChangeRemainder -= fractionToRemove;
+            int toRemove = std::abs(std::ceil(mosChangeRemainder));
+            mosChangeRemainder += toRemove;
+            mManager.remove_mosquito(toRemove);
+            if (VERBOSE || (!VERBOSE && time % OUTPUT_INTERVAL == 0))
+                std::cout << "Mosquitoes removed: " << toRemove << ", leftToRemove: " << numLeftToRemove << ", timeLeftToRemove: " << timeLeftToRemove << ", total: " << mManager.get_count() << "\n";
+        }
+    }
+}
+
+
+
+
+
+
+void MosquitoManager::initialise(std::vector<Mosquito>* mosquitoesArray)
+{
+    numMosquitoes = 0;
+    mosquitoes = mosquitoesArray;
+    activeMosquitoes.reserve(NUM_MOSQUITOES_MAX);
+    inactiveMosquitoes.reserve(NUM_MOSQUITOES_MAX);
+    for (unsigned int i=0; i<mosquitoes->size(); ++i)
+    {
+        if (mosquitoes->at(i).is_active())
+        {
+            activeMosquitoes.push_back(i);
+            numMosquitoes++;
+        } else
+            inactiveMosquitoes.push_back(i);
+    }
+}
+
+void MosquitoManager::remove_mosquito(unsigned int numToRemove)
+{
+    for (unsigned int i=0; i<numToRemove; ++i)
+    {
+        if (!activeMosquitoes.empty())
+        {
+            unsigned int iM = activeMosquitoes.back();
+            mosquitoes->at(iM).kill();
+            mosquitoes->at(iM).active = false;
+            activeMosquitoes.pop_back();
+            inactiveMosquitoes.push_back(iM);
+            --numMosquitoes;
+        }
+    }
+}
+void MosquitoManager::add_mosquito(unsigned int numToAdd)
+{
+    for (unsigned int i=0; i<numToAdd; ++i)
+    {
+        if (inactiveMosquitoes.empty()) //then we need to create a new mosquitoe...
+        {
+            Mosquito newMosquito;
+            newMosquito.kill();
+            newMosquito.active = true;
+            mosquitoes->push_back(newMosquito);
+            activeMosquitoes.push_back(mosquitoes->size()-1);
+            numMosquitoes++;
+        }
+        else //inactive mosquito can be reactivated
+        {
+            unsigned int iM = inactiveMosquitoes.back();
+            mosquitoes->at(iM).kill();
+            mosquitoes->at(iM).active = true;
+            inactiveMosquitoes.pop_back();
+            activeMosquitoes.push_back(iM);
+            numMosquitoes++;
+        }
+    }
+}
+
+unsigned int MosquitoManager::random_active_mos() const
+{
+    return activeMosquitoes[utilities::random(0, activeMosquitoes.size())];
+}
