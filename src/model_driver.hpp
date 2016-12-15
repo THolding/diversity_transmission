@@ -19,7 +19,6 @@ public:
     void remove_mosquito(unsigned int numToRemove = 1);
     void add_mosquito(unsigned int numToAdd = 1);
     unsigned int random_active_mos() const;
-
 };
 
 

@@ -2,6 +2,8 @@
 
 namespace testing
 {
+    void new_tests();
+
     void run_tests();
 
     void test_immunity();

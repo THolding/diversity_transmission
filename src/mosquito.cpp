@@ -41,6 +41,8 @@ void Mosquito::age_mosquito(const PTABLE& pDeath)
 {
     if (utilities::random_float01() < pDeath[age])
         kill();
+    else
+        ++age;
 }
 
 //killed and reborn

@@ -72,6 +72,11 @@ void ModelDriver::run_model()
     initialise_model();
     output.preinitialise_output_storage(RUN_TIME, OUTPUT_INTERVAL);
 
+    std::cout << "cumulative bite frequency distribution:\n";
+    for (float f : cumulativeBiteFrequencyDistribution)
+        std::cout << f << ", ";
+    std::cout << "\n";
+
     bool finished = false;
     unsigned int time = 0;
     burnInPeriod = BURN_IN_PERIOD;
@@ -138,7 +143,8 @@ void ModelDriver::age_hosts()
 void ModelDriver::age_mosquitoes()
 {
     for (Mosquito& mosquito : mosquitoes)
-        mosquito.age_mosquito(pDeathMosquitoes);
+        if (mosquito.is_active())
+            mosquito.age_mosquito(pDeathMosquitoes);
 }
 
 void ModelDriver::update_host_infections()
@@ -150,13 +156,14 @@ void ModelDriver::update_host_infections()
 void ModelDriver::update_mosquito_infections()
 {
     for (Mosquito& mosquito : mosquitoes)
-        mosquito.update_infection();
+        if (mosquito.is_active())
+            mosquito.update_infection();
 }
 
 void ModelDriver::feed_mosquitoes()
 {
     bool allowRecombination;
-    if (burnInPeriod == 0)
+    if (burnInPeriod <= 0)
     {
         allowRecombination = true;
     }
@@ -167,17 +174,19 @@ void ModelDriver::feed_mosquitoes()
 
     for (Mosquito& mosquito : mosquitoes)
     {
-        //Calculate number of times the mosquito feeds.
-        float p = utilities::random_float01()*cumulativeBiteFrequencyDistribution.back();
-        unsigned int numBites = 0;
-        while (p > cumulativeBiteFrequencyDistribution[numBites])
-            ++numBites;
+        if (mosquito.is_active()) {
+            //Calculate number of times the mosquito feeds.
+            float p = utilities::random_float01()*cumulativeBiteFrequencyDistribution.back();
+            unsigned int numBites = 0;
+            while (p > cumulativeBiteFrequencyDistribution[numBites])
+                ++numBites;
 
-        //For each feed, select a host and feed.
-        for (unsigned int b=0; b<numBites; ++b)
-        {
-            unsigned int iH = utilities::urandom(0, hosts.size());
-            mosquito.feed(hosts[iH], &output, allowRecombination);
+            //For each feed, select a host and feed.
+            for (unsigned int b=0; b<numBites; ++b)
+            {
+                unsigned int iH = utilities::urandom(0, hosts.size());
+                mosquito.feed(hosts[iH], &output, allowRecombination);
+            }
         }
     }
 }

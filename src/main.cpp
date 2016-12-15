@@ -9,7 +9,7 @@ std::string RUN_NAME = "default";
 std::string FILE_PATH = "";
 bool VERBOSE = false;
 
-unsigned int RUN_TIME = 5000;
+unsigned int RUN_TIME = 8000;
 unsigned int OUTPUT_INTERVAL = 500;
 unsigned int BURN_IN_PERIOD = 2000; //Recombination only allowed after this period.
 
@@ -43,7 +43,7 @@ std::array<float, 2> RECOMBINATION_CUMU_P = { INTERGENIC_RECOMBINATION_P, INTERG
 float RECOMBINATION_SCALE = 600.0f; //Scales the degree of genotypic change resulting from intragenic recombination
 
 float INFECTION_DURATION_SCALE = 1.0;
-float INFECTIVITY_SCALE = 0.1;
+float INFECTIVITY_SCALE = 0.5;
 
 
 bool set_globals_from_cmd(int argc, char* argv[]);
@@ -57,6 +57,7 @@ int main(int argc, char* argv[])
 
     ModelDriver model;
     model.run_model();
+    //testing::new_tests();
 
     //run_dyn_mosquitoes();
 

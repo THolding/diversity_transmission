@@ -112,7 +112,8 @@ void Output::calc_mosquito_infection_metrics(const Mosquitoes& mosquitoes, float
     for (const Mosquito& mosquito : mosquitoes)
     {
         //Count number of mosquitoes that are infected
-        prevalence += mosquito.is_infected();
+        if (mosquito.is_active())
+            prevalence += mosquito.is_infected();
     }
     prevalence = prevalence / model->get_mos_manager()->get_count();
 }
