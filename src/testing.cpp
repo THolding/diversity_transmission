@@ -1,5 +1,4 @@
 #include "testing.hpp"
-#include "global_parameters.hpp"
 #include "host.hpp"
 #include "strain.hpp"
 #include "infection.hpp"
@@ -14,11 +13,11 @@ void testing::new_tests()
 {
     utilities::initialise_random();
     BITE_FREQUENCY_TABLE cumulativeBiteFrequencyDistribution;
-    cumulativeBiteFrequencyDistribution = initialise_cumulative_bite_frequency_distribution();
+    cumulativeBiteFrequencyDistribution = ParamManager::instance().get_cumulative_bite_frequency_distribution();
     PTABLE pDeathMosquitoes;
     pDeathMosquitoes = generate_mosquito_ptable();
     Output output(nullptr);
-    output.preinitialise_output_storage(1000, 100);
+    output.preinitialise_output_storage();
 
     Strain strain = strain_from_antigen_pool({0*128, 1*128, 2*128, 3*128, 4*128, 5*128});
     Host host;

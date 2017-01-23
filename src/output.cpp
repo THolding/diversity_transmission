@@ -6,9 +6,10 @@
 #include <unordered_map>
 
 
-void Output::preinitialise_output_storage(const unsigned int numTimeSteps, const unsigned int outputInterval)
+void Output::preinitialise_output_storage()
 {
-    unsigned int sizeNeeded = (numTimeSteps / outputInterval)+1; //+1 for initial conditions
+    //unsigned int sizeNeeded = (numTimeSteps / outputInterval)+1; //+1 for initial conditions
+    unsigned int sizeNeeded = ParamManager::instance().get_int("output_size_needed");
 
     timeLog.reserve(sizeNeeded);
 
@@ -24,10 +25,14 @@ void Output::preinitialise_output_storage(const unsigned int numTimeSteps, const
 
     eir.reserve(sizeNeeded);
 
-    if (DYN_NUM_MOSQUITOES)
+    if (ParamManager::instance().get_bool("dyn_num_mosquitoes"))
         numMosquitoesList.reserve(sizeNeeded);
 
+    if (ParamManager::instance().get_bool("dyn_bite_rate"))
+        biteRateList.reserve(sizeNeeded);
+
     curNumInfectiousBites = 0;
+    lastUpdateTime = -1;
 }
 
 void Output::append_output(const unsigned int timestep, const Hosts& hosts, const Mosquitoes& mosquitoes)
@@ -51,10 +56,11 @@ void Output::append_output(const unsigned int timestep, const Hosts& hosts, cons
     hostDiversity.push_back(calc_host_diversity(hosts));
     antigenicHostDiversity.push_back(calc_antigen_host_diversity(hosts));
 
-    eir.push_back(calc_eir()); //Used callback counter and self-resets.
+    eir.push_back(calc_eir(timestep)); //Used callback counter and self-resets.
 
-    if (DYN_NUM_MOSQUITOES || DYN_NUM_MOSQUITOES)
-        log_dyn_params();
+    log_dyn_params();
+
+    lastUpdateTime = timestep;
 }
 
 void Output::export_output(const std::string runName, const std::string filePath)
@@ -73,8 +79,11 @@ void Output::export_output(const std::string runName, const std::string filePath
 
     utilities::arrayToFile(eir, filePath+runName+"_eir.csv");
 
-    if (DYN_NUM_MOSQUITOES)
+    if (ParamManager::instance().get_bool("dyn_num_mosquitoes"))
         utilities::arrayToFile(numMosquitoesList, filePath+runName+"_num_mosquitoes.csv");
+
+    if (ParamManager::instance().get_bool("dyn_bite_rate"))
+        utilities::arrayToFile(biteRateList, filePath+runName+"_bite_rate.csv");
 }
 
 void Output::register_infectious_bite()
@@ -98,8 +107,8 @@ void Output::calc_host_infection_metrics(const Hosts& hosts, float& prevalence, 
         }
     }
 
-    prevalence = prevalence / NUM_HOSTS;
-    multiplicityOfInfection = multiplicityOfInfection / NUM_HOSTS;
+    prevalence = prevalence / ParamManager::instance().get_int("num_hosts");
+    multiplicityOfInfection = multiplicityOfInfection / ParamManager::instance().get_int("num_hosts");
 
     std::cout << "Host prevalence: " << prevalence << std::endl;
 }
@@ -123,7 +132,7 @@ void Output::calc_host_immunity_metrics(const Hosts& hosts, float& immunityMean,
     immunityMean = 0.0f;
     immunityVariance = 0.0f;
 
-    std::vector<float> individualTotals(NUM_HOSTS);
+    std::vector<float> individualTotals(ParamManager::instance().get_int("num_hosts"));
 
     //Calculate mean
     for (unsigned int iH=0; iH<hosts.size(); ++iH)
@@ -142,7 +151,7 @@ void Output::calc_host_immunity_metrics(const Hosts& hosts, float& immunityMean,
     //Calculate variance
     for (float val : individualTotals)
         immunityVariance += std::pow(immunityMean - val, 2);
-    immunityVariance = immunityVariance / NUM_HOSTS;
+    immunityVariance = immunityVariance / ParamManager::instance().get_int("num_hosts");
 }
 
 float Output::calc_host_diversity(const Hosts& hosts)
@@ -167,7 +176,6 @@ float Output::calc_host_diversity(const Hosts& hosts)
 
     return diversityPool.size();
 }
-
 
 float Output::calc_antigen_host_diversity(const Hosts& hosts)
 {
@@ -197,15 +205,17 @@ float Output::calc_antigen_host_diversity(const Hosts& hosts)
         }
     }
 
-    float antigenDiversity = (float)diversityPool.size() / (float)NUM_PHENOTYPES;
+    float antigenDiversity = (float)diversityPool.size() / (float)ParamManager::instance().get_int("num_phenotypes");
     return antigenDiversity;
 }
 
 //returns daily EIR.
-float Output::calc_eir()
+float Output::calc_eir(const unsigned int currentTime)
 {
-    float eir = (float)curNumInfectiousBites / (float)NUM_HOSTS;
-    eir = eir / (float) OUTPUT_INTERVAL;
+    unsigned int timeSinceLastUpdate = currentTime - lastUpdateTime;
+    ////////THIS MIGHT BE BROKEN! Must cache previous call time and calculate EIR accordingly.
+    float eir = (float)curNumInfectiousBites / (float)ParamManager::instance().get_int("num_hosts");
+    eir = eir / (float)timeSinceLastUpdate;
 
     //Reset any counters.
     curNumInfectiousBites = 0;
@@ -215,6 +225,9 @@ float Output::calc_eir()
 
 void Output::log_dyn_params()
 {
-    if (DYN_NUM_MOSQUITOES)
+    if (ParamManager::instance().get_bool("dyn_num_mosquitoes"))
         numMosquitoesList.push_back(model->get_mos_manager()->get_count());
+
+    if (ParamManager::instance().get_bool("dyn_bite_rate"))
+        biteRateList.push_back(ParamManager::instance().get_float("bite_rate"));
 }

@@ -12,6 +12,9 @@ private:
 
     ModelDriver* model;
 
+    //Counters
+    int lastUpdateTime = -1;
+    unsigned int curNumInfectiousBites;
     std::vector<unsigned int> timeLog;
 
     std::vector<float> hPrevalence;
@@ -27,9 +30,7 @@ private:
     std::vector<float> eir;
 
     std::vector<unsigned int> numMosquitoesList;
-
-    //Counters
-    unsigned int curNumInfectiousBites;
+    std::vector<float> biteRateList;
 
     void calc_host_infection_metrics(const Hosts& hosts, float& prevalence, float& multiplicityOfInfection);
     void calc_mosquito_infection_metrics(const Mosquitoes& mosquitoes, float& prevalence);
@@ -39,14 +40,14 @@ private:
     float calc_host_diversity(const Hosts& hosts);
     float calc_antigen_host_diversity(const Hosts& hosts);
 
-    float calc_eir();
+    float calc_eir(const unsigned int currentTime);
     void log_dyn_params();
 
 public:
     Output(ModelDriver* _model) : model(_model) {  }
-    void preinitialise_output_storage(const unsigned int numTimeSteps, const unsigned int outputInterval);
+    void preinitialise_output_storage();
     void append_output(const unsigned int timestep, const Hosts& hosts, const Mosquitoes& mosquitoes);
-    void export_output(const std::string runName=RUN_NAME, const std::string filePath=FILE_PATH);
+    void export_output(const std::string runName=ParamManager::instance().run_name(), const std::string filePath=ParamManager::instance().file_path());
 
     void register_infectious_bite();
 };

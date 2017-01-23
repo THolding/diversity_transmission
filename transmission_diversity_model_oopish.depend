@@ -620,13 +620,13 @@
 
 1481552176 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_oopish_cmd_dynamic/src/tmp_simulations.hpp
 
-1480415348 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/demographic_tools.cpp
+1483708359 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/demographic_tools.cpp
 	"demographic_tools.hpp"
 	"utilities.hpp"
+	"param_manager.hpp"
 	<cmath>
 
-1478641804 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/demographic_tools.hpp
-	"global_parameters.hpp"
+1483710666 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/demographic_tools.hpp
 	"host.hpp"
 	"mosquito.hpp"
 
@@ -634,18 +634,18 @@
 	<array>
 	<limits>
 
-1480348315 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/host.hpp
-	<array>
+1483710866 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/host.hpp
 	"infection.hpp"
+	"param_manager.hpp"
 
 1480413903 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/infection.hpp
 	"strain.hpp"
 
-1480347474 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/strain.hpp
-	"global_parameters.hpp"
+1483710746 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/strain.hpp
 	<vector>
+	"global_typedefs.hpp"
 
-1481539502 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/mosquito.hpp
+1484065396 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/mosquito.hpp
 	"infection.hpp"
 	"host.hpp"
 
@@ -655,31 +655,35 @@
 	<string>
 	<iostream>
 
-1481286833 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/host.cpp
+1482146350 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/host.cpp
 	"host.hpp"
 	"utilities.hpp"
 	<cmath>
 	<iostream>
 
-1480414772 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/infection.cpp
+1483708423 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/infection.cpp
 	"infection.hpp"
+	"param_manager.hpp"
 	<iostream>
 
-1481807640 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/main.cpp
+1484232301 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/main.cpp
 	<iostream>
-	"global_parameters.hpp"
+	"param_manager.hpp"
 	"model_driver.hpp"
 	"testing.hpp"
 	<fstream>
-	"tmp_simulations.hpp"
+	<sstream>
+	<limits>
+	"adaptors/mosquito_population_adaptor.hpp"
+	"adaptors/bite_rate_adaptor.hpp"
+	"adaptors/output_interval_adaptor.hpp"
 
-1481741097 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/model_driver.hpp
-	"global_parameters.hpp"
+1484064919 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/model_driver.hpp
 	"host.hpp"
 	"output.hpp"
-	"mosquito.hpp"
+	"mosquito_manager.hpp"
 
-1481551032 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/output.hpp
+1484383366 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/output.hpp
 	"host.hpp"
 	"mosquito.hpp"
 
@@ -687,20 +691,20 @@
 
 1481552176 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/tmp_simulations.hpp
 
-1481809088 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/mosquito.cpp
+1484133181 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/mosquito.cpp
 	"mosquito.hpp"
 	"output.hpp"
 	"utilities.hpp"
 	<cmath>
 
-1481279096 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/strain.cpp
+1483953615 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/strain.cpp
 	"strain.hpp"
+	"param_manager.hpp"
 	"utilities.hpp"
 	<sstream>
 
-1481809054 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/testing.cpp
+1484222434 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/testing.cpp
 	"testing.hpp"
-	"global_parameters.hpp"
 	"host.hpp"
 	"strain.hpp"
 	"infection.hpp"
@@ -711,30 +715,94 @@
 	<iostream>
 	<vector>
 
-1481552192 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/tmp_simulations.cpp
+1483715778 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/tmp_simulations.cpp
 	"tmp_simulations.hpp"
 	"model_driver.hpp"
+	"param_manager.hpp"
 
-1480415451 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/utilities.cpp
+1483715836 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/utilities.cpp
 	"utilities.hpp"
-	"global_parameters.hpp"
+	"param_manager.hpp"
 	<cstdlib>
 	<ctime>
 	<stdexcept>
 
-1481806383 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/model_driver.cpp
+1484231751 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/model_driver.cpp
 	"model_driver.hpp"
 	"demographic_tools.hpp"
 	"strain.hpp"
 	"utilities.hpp"
+	"param_manager.hpp"
 	<cmath>
 	<vector>
 
-1481741028 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/output.cpp
+1484220264 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/output.cpp
 	"output.hpp"
 	"model_driver.hpp"
 	"strain.hpp"
 	"utilities.hpp"
 	<cmath>
 	<unordered_map>
+
+1484231475 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/param_manager.cpp
+	"param_manager.hpp"
+	"mosquito.hpp"
+	"utilities.hpp"
+	"adaptors/output_interval_adaptor.hpp"
+	<cmath>
+	<limits>
+	<iostream>
+
+1484221366 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/param_manager.hpp
+	"adaptors/adaptor.hpp"
+	"global_typedefs.hpp"
+	<array>
+	<list>
+	<string>
+	<unordered_map>
+
+1483710798 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/global_typedefs.hpp
+	<array>
+
+1484061762 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/adaptors/adaptor.hpp
+	<string>
+
+1484061002 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/adaptors/adaptor.cpp
+	"adaptor.hpp"
+	"../mosquito_manager.hpp"
+	<cmath>
+	<iostream>
+
+1484044209 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/mosquito_manager.hpp
+	"mosquito.hpp"
+	<vector>
+
+1484061191 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/mosquito_manager.cpp
+	"mosquito_manager.hpp"
+	"utilities.hpp"
+
+1484064324 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/adaptors/mosquito_population_adaptor.cpp
+	"mosquito_population_adaptor.hpp"
+	"../mosquito_manager.hpp"
+	<cmath>
+	<iostream>
+
+1484062330 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/adaptors/mosquito_population_adaptor.hpp
+	"adaptor.hpp"
+
+1484146922 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/adaptors/bite_rate_adaptor.cpp
+	"bite_rate_adaptor.hpp"
+	"../param_manager.hpp"
+	<iostream>
+
+1484062498 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/adaptors/bite_rate_adaptor.hpp
+	"adaptor.hpp"
+
+1484230940 source:/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/adaptors/output_interval_adaptor.cpp
+	"output_interval_adaptor.hpp"
+	"../param_manager.hpp"
+	<iostream>
+
+1484221326 /home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/src/adaptors/output_interval_adaptor.hpp
+	"adaptor.hpp"
 

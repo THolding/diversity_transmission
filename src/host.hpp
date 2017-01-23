@@ -1,6 +1,6 @@
 #pragma once
-#include <array>
 #include "infection.hpp"
+#include "param_manager.hpp"
 
 class Host
 {
@@ -17,5 +17,5 @@ public:
 
     bool is_infected() const { return infection1.infected || infection2.infected; }
 
-    Host() : immuneState(NUM_PHENOTYPES, 0.0) {  }
+    Host() : immuneState(ParamManager::instance().get_int("num_phenotypes"), 0.0) {  }
 };

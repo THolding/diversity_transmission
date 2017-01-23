@@ -4,8 +4,6 @@
 
 class Output;
 
-BITE_FREQUENCY_TABLE initialise_cumulative_bite_frequency_distribution();
-
 class Mosquito
 {
 public:

@@ -31,6 +31,8 @@ void Host::age_host(const PTABLE& pDeath)
 {
     if (utilities::random_float01() < pDeath[std::floor(age / 365)]) //If the host dies.
         kill();
+    else
+        ++age;
 }
 
 void Host::kill()

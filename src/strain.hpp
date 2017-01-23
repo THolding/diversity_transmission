@@ -1,6 +1,6 @@
 #pragma once
-#include "global_parameters.hpp"
 #include <vector>
+#include "global_typedefs.hpp"
 
 Antigen init_genotype_mask();
 

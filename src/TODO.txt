@@ -1,0 +1,21 @@
+ParamManager::recalc_derived_parameters() should be split into separate functions and recalculate death probability functions, bite distributions, cumulative recombination p...
+
+Implement a multi-type map...? Compare speed with naive approach.
+
+
+
+
+
+----
+Global parameters is a singleton - get it running like this.
+Find a way to have the ParamManager know about the model, hosts, mosquitoes, MosquitoManager...
+
+
+implement base adaptor, then:
+	simple adaptor (change range which are not cached, e.g. recombination_scale, infection_duration_scale)
+	adaptor_not_supported exception/adaptor.
+	check for adaptor time collisions (overlaps).
+	implement mosquito and host adaptors
+	implement bite rate and recombination adaptors
+	implement demographic adaptors
+	implement infectivity adaptors

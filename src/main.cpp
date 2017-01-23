@@ -1,215 +1,101 @@
 #include <iostream>
-#include "global_parameters.hpp"
+#include "param_manager.hpp"
 #include "model_driver.hpp"
 #include "testing.hpp"
 #include <fstream>
-#include "tmp_simulations.hpp"
+#include <sstream>
+#include <limits>
+#include "adaptors/mosquito_population_adaptor.hpp"
+#include "adaptors/bite_rate_adaptor.hpp"
+#include "adaptors/output_interval_adaptor.hpp"
 
-std::string RUN_NAME = "default";
-std::string FILE_PATH = "";
-bool VERBOSE = false;
-
-unsigned int RUN_TIME = 8000;
-unsigned int OUTPUT_INTERVAL = 500;
-unsigned int BURN_IN_PERIOD = 2000; //Recombination only allowed after this period.
-
-
-bool DYN_NUM_MOSQUITOES = false;
-unsigned int NUM_MOSQUITOES_MAX = 0;
-unsigned int START_MOS_INC = 0; //time point in days
-unsigned int STOP_MOS_INC = 0; //time point in days
-unsigned int START_MOS_DCR = 0; //time point in days
-unsigned int STOP_MOS_DCR = 0; //time point in days
-
-unsigned int NUM_HOSTS = 5000;
-unsigned int NUM_MOSQUITOES = 5000;
-unsigned int INITIAL_ANTIGEN_DIVERSITY = 2*60; //Number of antigen variants sampled to provide initial antigen diversity.
-unsigned int INITIAL_NUM_STRAINS = 4; //Number of strains which are constructed from the initial antigen pool at the start of simulation. Used to initialise initial infections.
-unsigned int INITIAL_NUM_MOSQUITO_INFECTIONS = 1000;
-
-unsigned int NUM_PHENOTYPES = 50000; //Number of antigenically distinct phenotypes for antigens.
-unsigned int NUM_GENOTYPE_ONLY_BITS = 7; //The first x bits encode genotype only variation - no phenotypic effects.
-unsigned int GENOTYPIC_SPACE_SIZE = std::numeric_limits<unsigned int>::max(); //Total genotypic space across all phenotypes.
-
-unsigned int REPERTOIRE_SIZE = 60;
-
-unsigned int MEAN_MOSQUITO_LIFE_EXPECTANCY = 32; //In days, Bellan2010.
-unsigned int MOSQUITO_EIP = 10; //Extrinsic inoculation period in days, Deitz1974.
-float BITE_RATE = 0.2f; //Daily probability of mosquito biting.
-
-float INTERGENIC_RECOMBINATION_P = 0.1f; //Per gene intergenic recombination probability (swap genes).
-float INTRAGENIC_RECOMBINATION_P = 0.2f; //Per gene intragenic recombination probability (hybrid gene).
-std::array<float, 2> RECOMBINATION_CUMU_P = { INTERGENIC_RECOMBINATION_P, INTERGENIC_RECOMBINATION_P+INTRAGENIC_RECOMBINATION_P };
-float RECOMBINATION_SCALE = 600.0f; //Scales the degree of genotypic change resulting from intragenic recombination
-
-float INFECTION_DURATION_SCALE = 1.0;
-float INFECTIVITY_SCALE = 0.5;
-
-
-bool set_globals_from_cmd(int argc, char* argv[]);
-bool parse_cmd_argument(const std::string& token, const std::string& value);
-bool recalc_derived_parameters(); //Some parameters aren't set directly but depend on others. After setting parameters these must be recalculated.
+void parse_parameters_from_cmd(int argc, char* argv[], ModelDriver& model);
+void parse_adaptor_from_cmd(const std::string& adaptorType, const std::string& argList, ModelDriver& model);
 
 int main(int argc, char* argv[])
 {
-    if (!set_globals_from_cmd(argc, argv))
-        return -1;
+    ParamManager::instance(); //Initialise the instance!
+    ModelDriver model; //Empty project so we can setup references / pointers.
+    parse_parameters_from_cmd(argc, argv, model); //Throws exception if fails.
 
-    ModelDriver model;
+    //ParamManager::instance().add_adaptor(new MosquitoPopulationAdaptor(4, 8, 5020, model.get_mos_manager()));
+    //ParamManager::instance().add_adaptor(new MosquitoPopulationAdaptor(8, 12, 4980, model.get_mos_manager()));
+    //ParamManager::instance().add_adaptor(new BiteRateAdaptor(8, 12, 0.1));
+    //ParamManager::instance().add_adaptor(new OutputIntervalAdaptor(6, 10, 1));
+
+    ParamManager::instance().recalculate_derived_parameters();
     model.run_model();
-    //testing::new_tests();
-
-    //run_dyn_mosquitoes();
-
-    //testing::run_tests();
-
 
     return 0;
 }
 
-//http://stackoverflow.com/questions/5290089/how-to-convert-a-number-to-string-and-vice-versa-in-c
-bool parse_cmd_argument(const std::string& token, const std::string& value)
-{
-    if (token == "run_name")
-        RUN_NAME = value;
-    else if (token == "file_path")
-    {
-        if (value.back() != '/') //File path must end with a '/'...
-            FILE_PATH = value+"/";
-        else
-            FILE_PATH = value;
-    }
-    else if (token == "run_time")
-        RUN_TIME = stoi(value);
-    else if (token == "output_interval")
-        OUTPUT_INTERVAL = stoi(value);
-    else if (token == "burn_in_period")
-        BURN_IN_PERIOD = stoi(value);
-    else if (token == "num_hosts")
-        NUM_HOSTS = stoi(value);
-    else if (token == "num_mosquitoes")
-        NUM_MOSQUITOES = stoi(value);
-    else if (token == "initial_antigen_diversity")
-        INITIAL_ANTIGEN_DIVERSITY = stoi(value);
-    else if (token == "initial_num_strains")
-        INITIAL_NUM_STRAINS = stoi(value);
-    else if (token == "initial_num_mosquito_infections")
-        INITIAL_NUM_MOSQUITO_INFECTIONS = stoi(value);
-    else if (token == "num_phenotypes")
-        NUM_PHENOTYPES = stoi(value);
-    else if (token == "num_genotype_only_bits")
-        NUM_GENOTYPE_ONLY_BITS = stoi(value);
-    else if (token == "repertoire_size")
-        REPERTOIRE_SIZE = stoi(value);
-    else if (token == "mean_mosquito_life_expectancy")
-        MEAN_MOSQUITO_LIFE_EXPECTANCY = stoi(value);
-    else if (token == "mosquito_eip")
-        MOSQUITO_EIP = stoi(value);
-    else if (token == "bite_rate")
-        BITE_RATE = stof(value);
-    else if (token == "intergenic_recombination_p")
-        INTERGENIC_RECOMBINATION_P = stof(value);
-    else if (token == "intragenic_recombination_p")
-        INTRAGENIC_RECOMBINATION_P = stof(value);
-    else if (token == "recombination_scale")
-        RECOMBINATION_SCALE = stof(value);
-    else if (token == "infection_duration_scale")
-        INFECTION_DURATION_SCALE = stof(value);
-    else if (token == "infectivity_scale")
-        INFECTIVITY_SCALE = stof(value);
-    else if (token == "verbose")
-    {
-        if (value == "true")
-            VERBOSE = true;
-        else
-            VERBOSE = false;
-    }
-    else if (token == "dyn_num_mosquitoes")
-    {
-        if (value == "true") DYN_NUM_MOSQUITOES = true;
-        else DYN_NUM_MOSQUITOES = false;
-    }
-    else if (token == "num_mosquitoes_max")
-        NUM_MOSQUITOES_MAX = stoi(value);
-    else if (token == "start_mos_inc")
-        START_MOS_INC = stoi(value);
-    else if (token == "stop_mos_inc")
-        STOP_MOS_INC = stoi(value);
-    else if (token == "start_mos_dcr")
-        START_MOS_DCR = stoi(value);
-    else if (token == "stop_mos_dcr")
-        STOP_MOS_DCR = stoi(value);
-    else
-    {
-        std::cout << "\n\nUnrecognised parameter token!\n";
-        return false;
-    }
-
-    return true;
-}
-
-bool set_globals_from_cmd(int argc, char* argv[])
+void parse_parameters_from_cmd(int argc, char* argv[], ModelDriver& model)
 {
     //Check number of cmdline arguments
-    if (argc == 1) //One argument is fine as this is the program being called.
-        return true;
-    else if ((argc-1) % 2 != 0) //Must be an odd number of arguments, as it is the first argument plus a number of parameter:value pairs.
-    {
-        std::cout << "\n\nMismatched number of command line arguments. Cannot parse token:value pairs.\n";
-        std::cout << argc << " input arguments detected:\n";
-        for (int i=0; i<argc; ++i)
-            std::cout << "\t" << argv[i] << "\n";
-        return false;
-    }
+    if ((argc-1) % 2 != 0) //Must be an odd number of arguments, as it is the first argument plus a number of parameter:value pairs.
+        throw std::runtime_error("main.cpp, set_globals_from_cmd(): Mismatched number of command line arguments. Cannot parse token:value pairs.");
 
     //Parse token:value pairs.
     for (int i=1; i<argc; i+=2)
     {
         std::string token(argv[i]);
         std::string value(argv[i+1]);
-        if (parse_cmd_argument(token, value) == false)
-        {
-            std::cout << "unrecognised token: " << token << ", value: " << value << "\n";
-            return false;
-        }
+
+        if (token.find("adaptor") != std::string::npos) //If it's an adaptor definition parse it as an adaptor
+            parse_adaptor_from_cmd(token, value, model);
+        else //...otherwise assume it is setting a parameter
+            ParamManager::instance().set_param(token, value); //Throwes exception if token doesn't name an existing parameter.
     }
-    if (recalc_derived_parameters() == false) //Some parameters are derived from others, now user parameters have changed these need calculating.
-    {
-        std::cout << "ERROR: Cannot set derived parameters - this indicates inconsistent parameter states e.g. stop time before start time in dynamic parameters.\n";
-        return false; //but sometimes this is impossible, indicating incorrect parameters.
-    }
+
+    if (ParamManager::instance().recalculate_derived_parameters() == false) //Some parameters are derived from others, now user parameters have changed these need calculating.
+        std::runtime_error("ERROR: Cannot set derived parameters - this indicates inconsistent parameter states e.g. stop time before start time in dynamic parameters.");
 
     //Write called arguments to file
     std::ofstream file;
-    file.open(FILE_PATH+RUN_NAME+"_calling_arguments.txt", std::ofstream::out | std::ofstream::trunc);
+    file.open(ParamManager::instance().file_path()+ParamManager::instance().run_name()+"_calling_arguments.txt", std::ofstream::out | std::ofstream::trunc);
     file << argv[0] << "\n\n";
     for (int i=1; i<argc; i+=2)
         file << argv[i] << " " << argv[i+1] << "\n";
     file.flush();
     file.close();
-
-    return true;
 }
 
-//Some parameters aren't set directly but depend on others. After setting parameters these must be recalculated.
-bool recalc_derived_parameters()
+void parse_adaptor_from_cmd(const std::string &adaptorType, const std::string &argList, ModelDriver& model)
 {
-    RECOMBINATION_CUMU_P = {INTERGENIC_RECOMBINATION_P, INTERGENIC_RECOMBINATION_P+INTRAGENIC_RECOMBINATION_P};
-    GENOTYPIC_SPACE_SIZE = std::numeric_limits<unsigned int>::max(); //Total genotypic space across all phenotypes.
+    const char delim = '+';
 
-    //Dynamic mosquito population
-    if (DYN_NUM_MOSQUITOES) {
-        if (NUM_MOSQUITOES_MAX == 0)
-            return false;
-        if (BURN_IN_PERIOD > START_MOS_INC)
-            return false;
-        if (START_MOS_INC > STOP_MOS_INC)
-            return false;
-        if (START_MOS_DCR > STOP_MOS_DCR)
-            return false;
-        if (STOP_MOS_DCR > RUN_TIME)
-            return false;
+    std::stringstream ss;
+    ss.str(argList);
+    std::string curItem;
+
+    //Parse start time.
+    std::getline(ss, curItem, delim);
+    //std::cout << "tStart:" << curItem << std::endl;
+    unsigned int tStart = std::stoi(curItem);
+
+    //Parse stop time.
+    std::getline(ss, curItem, delim);
+    //std::cout << "tStop:" << curItem << std::endl;
+    unsigned int tStop = std::stoi(curItem);
+
+    //Load target value into curItem but don't make any assumptions about the type until we know the adaptor type.
+    std::getline(ss, curItem, delim);
+    //std::cout << "target:" << curItem << std::endl;
+
+    //Create the adaptor based on adaptorType string.
+    if (adaptorType.find("mosquito_population_adaptor") != std::string::npos) {
+        unsigned int targetPopulation = std::stoi(curItem);
+        ParamManager::instance().add_adaptor(new MosquitoPopulationAdaptor(tStart, tStop, targetPopulation, model.get_mos_manager()));
+        std::cout << "Added mosquito_population_adaptor.\n";
     }
-
-    return true;
+    else if (adaptorType.find("bite_rate_adaptor") != std::string::npos) {
+        float targetBiteRate = std::stof(curItem);
+        ParamManager::instance().add_adaptor(new BiteRateAdaptor(tStart, tStop, targetBiteRate));
+        std::cout << "Added bite_rate_adaptor.\n";
+    }
+    else if (adaptorType.find("output_interval_adaptor") != std::string::npos) {
+        unsigned int targetOutputInterval = std::stoi(curItem);
+        ParamManager::instance().add_adaptor(new OutputIntervalAdaptor(tStart, tStop, targetOutputInterval));
+        std::cout << "Added output_interval_adaptor.\n";
+    }
 }

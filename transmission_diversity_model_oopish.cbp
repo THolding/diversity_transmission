@@ -31,9 +31,17 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="src/TODO.txt" />
+		<Unit filename="src/adaptors/adaptor.hpp" />
+		<Unit filename="src/adaptors/bite_rate_adaptor.cpp" />
+		<Unit filename="src/adaptors/bite_rate_adaptor.hpp" />
+		<Unit filename="src/adaptors/mosquito_population_adaptor.cpp" />
+		<Unit filename="src/adaptors/mosquito_population_adaptor.hpp" />
+		<Unit filename="src/adaptors/output_interval_adaptor.cpp" />
+		<Unit filename="src/adaptors/output_interval_adaptor.hpp" />
 		<Unit filename="src/demographic_tools.cpp" />
 		<Unit filename="src/demographic_tools.hpp" />
-		<Unit filename="src/global_parameters.hpp" />
+		<Unit filename="src/global_typedefs.hpp" />
 		<Unit filename="src/host.cpp" />
 		<Unit filename="src/host.hpp" />
 		<Unit filename="src/infection.cpp" />
@@ -43,14 +51,16 @@
 		<Unit filename="src/model_driver.hpp" />
 		<Unit filename="src/mosquito.cpp" />
 		<Unit filename="src/mosquito.hpp" />
+		<Unit filename="src/mosquito_manager.cpp" />
+		<Unit filename="src/mosquito_manager.hpp" />
 		<Unit filename="src/output.cpp" />
 		<Unit filename="src/output.hpp" />
+		<Unit filename="src/param_manager.cpp" />
+		<Unit filename="src/param_manager.hpp" />
 		<Unit filename="src/strain.cpp" />
 		<Unit filename="src/strain.hpp" />
 		<Unit filename="src/testing.cpp" />
 		<Unit filename="src/testing.hpp" />
-		<Unit filename="src/tmp_simulations.cpp" />
-		<Unit filename="src/tmp_simulations.hpp" />
 		<Unit filename="src/utilities.cpp" />
 		<Unit filename="src/utilities.hpp" />
 		<Extensions>

@@ -1,0 +1,2 @@
+/home/rr/Dropbox/PhD/03. diversity transmission/cpp/transmission_diversity_model_main/bin/Release/transmission_diversity_model_oopish
+

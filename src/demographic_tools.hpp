@@ -1,5 +1,4 @@
 #pragma once
-#include "global_parameters.hpp"
 #include "host.hpp"
 #include "mosquito.hpp"
 

@@ -1,5 +1,5 @@
 #include "utilities.hpp"
-#include "global_parameters.hpp"
+#include "param_manager.hpp"
 #include <cstdlib>
 #include <ctime>
 #include <stdexcept>
@@ -10,7 +10,7 @@ void utilities::initialise_random()
     srand(seed);
 
     std::ofstream file;
-    file.open(FILE_PATH+RUN_NAME+"_seed.txt", std::ofstream::out | std::ofstream::trunc);
+    file.open(ParamManager::instance().file_path()+ParamManager::instance().run_name()+"_seed.txt", std::ofstream::out | std::ofstream::trunc);
     file << seed;
 
     file.flush();
