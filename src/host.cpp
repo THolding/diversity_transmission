@@ -13,16 +13,14 @@ void Host::infect(const Strain& strain)
         infection1.strain = strain;
         infection1.infectivity = infectivity_kernal(strain, immuneState);
         infection1.durationRemaining = duration_kernal(strain, immuneState);
-        //if (infection1.durationRemaining != 60)
-        //    std::cout << "Host::infect, duration is not 60: " << infection1.durationRemaining << "\n";
-        //exposure_kernal(strain, immuneState); //not needed as duration_kernal does this now too...
+        exposure_kernal(strain, immuneState); //not needed as duration_kernal does this now too...
     } else if (!infection2.infected)
     {
         infection2.infected = true;
         infection2.strain = strain;
         infection2.infectivity = infectivity_kernal(strain, immuneState);
         infection2.durationRemaining = duration_kernal(strain, immuneState);
-        //exposure_kernal(strain, immuneState); //not needed as duration_kernal does this now too...
+        exposure_kernal(strain, immuneState); //not needed as duration_kernal does this now too...
     }
 }
 

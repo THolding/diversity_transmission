@@ -4,6 +4,7 @@
 #include "adaptors/output_interval_adaptor.hpp"
 #include <cmath>
 #include <limits>
+#include <algorithm>
 
 #include <iostream>
 
@@ -13,28 +14,29 @@ ParamManager::ParamManager()
     std::cout << "Initialised ParamManager singleton instance.\n";
 
     paramsBool["verbose"] = false;
-    paramsInt["run_time"] = 10;//8000;
-    paramsInt["output_interval"] = 2;//500;
-    paramsInt["burn_in_period"] = 0;//2000;
+    paramsInt["run_time"] = 50000;//50000;
+    paramsInt["output_interval"] = 250;//250;
+    paramsInt["burn_in_period"] = 3000;//3000;
 
-    paramsInt["num_hosts"] = 5000;
-    paramsInt["initial_num_mosquitoes"] = 5000;
+    paramsInt["num_hosts"] = 8000;
+    paramsInt["initial_num_mosquitoes"] = 8000;
 
-    paramsInt["initial_antigen_diversity"] = 2*60;
-    paramsInt["initial_num_strains"] = 4;
-    paramsInt["initial_num_mosquito_infections"] = 1000;
+    paramsInt["initial_antigen_diversity"] = 2500;
+    paramsInt["initial_num_strains"] = 40;
+    paramsInt["initial_num_mosquito_infections"] = 500;
     paramsInt["num_phenotypes"] = 50000;
     paramsInt["num_genotype_only_bits"] = 7;
     paramsInt["genotypic_space_size"] = std::numeric_limits<unsigned int>::max();
     paramsInt["repertoire_size"] = 60;
     paramsInt["mean_mosquito_life_expectancy"] = 32; //In days, Bellan2010.
     paramsInt["mosquito_eip"] = 10; //Extrinsic inoculation period in days, Deitz1974.
-    paramsFloat["bite_rate"] = 0.2f;
-    paramsFloat["intergenic_recombination_p"] = 0.1f;
-    paramsFloat["intragenic_recombination_p"] = 0.2f;
-    paramsFloat["recombination_scale"] = 600.0f;
-    paramsFloat["infection_duration_scale"] = 1.0f;
+    paramsFloat["bite_rate"] = 0.12f;
+    paramsFloat["intergenic_recombination_p"] = 0.01f;
+    paramsFloat["intragenic_recombination_p"] = 0.002f;
+    paramsFloat["recombination_scale"] = 50.0f;
+    paramsFloat["infection_duration_scale"] = 2.0f;
     paramsFloat["infectivity_scale"] = 0.5f;
+    paramsFloat["cross_immunity"] = 0.0f;
 
     ////Dynamic support parameters.
     //Dynamic mosquito population (MosquitoPopulationAdaptor).
@@ -59,6 +61,7 @@ bool ParamManager::recalculate_derived_parameters()
 
     recalculate_cumulative_bite_frequency_distribution();
     recalculate_output_array_size_needed();
+    recalculate_immunity_mask();
 
     return true;
 }
@@ -80,6 +83,44 @@ void ParamManager::recalculate_cumulative_bite_frequency_distribution()
     cumulativeBiteFrequencyDistribution[0] = pdfPoisson[0];
     for (unsigned int i=1; i<pdfPoisson.size(); i++)
         cumulativeBiteFrequencyDistribution[i] = cumulativeBiteFrequencyDistribution[i-1]+pdfPoisson[i];
+}
+
+void ParamManager::recalculate_immunity_mask()
+{
+    immunityMask.clear();
+
+    //Generate one half of a normal distribution with mean of 0 and variance 'cross_immunity'.
+
+    immunityMask.push_back(1.0); //peak.
+
+    if (paramsFloat["cross_immunity"] == 0) //If cross-immunity is turned off, just return the peak.
+        return;
+    else
+    {
+        //Calculate one tail.
+        unsigned int x = 1;
+        float curVal = 1.0;
+        float mu = 0.0;
+        float var = paramsFloat["cross_immunity"]; //Variance
+        float amp = 1.0;
+
+        while (curVal >= 0.01) //Keep going until the distribution is very low.
+        {
+            curVal = amp * std::exp( -(std::pow(x-mu,2) / (2*std::pow(var,2))) );
+            immunityMask.push_back(curVal);
+            ++x;
+        }
+
+        //Copy right hand tail to the left.
+        unsigned int tailSize = immunityMask.size()-1;
+        auto itr = immunityMask.begin();
+        itr++;
+        for (unsigned int i=0; i<tailSize; i++)
+        {
+            immunityMask.insert(immunityMask.begin(), *itr);
+            itr++;
+        }
+    }
 }
 
 void ParamManager::recalculate_output_array_size_needed()

@@ -15,5 +15,5 @@ public:
 
 //Temporary - need to be replaced with function pointers and modularised.
 float infectivity_kernal(const Strain& strain, const ImmuneState& immuneState);
-unsigned short duration_kernal(const Strain& strain, ImmuneState& immuneState);
-//void exposure_kernal(const Strain& strain, ImmuneState& immuneState);
+unsigned short duration_kernal(const Strain& strain, const ImmuneState& immuneState);
+void exposure_kernal(const Strain& strain, ImmuneState& immuneState);

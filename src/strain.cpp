@@ -23,6 +23,7 @@ Antigen get_genotype_id(const Antigen antigen)
     return antigen & GENOTYPE_MASK;
 }
 
+//Takes the whole antigen and returns phenotype ID only.
 Antigen get_phenotype_id(const Antigen antigen)
 {
     return (antigen >> ParamManager::instance().get_int("num_genotype_only_bits")) % ParamManager::instance().get_int("num_phenotypes");

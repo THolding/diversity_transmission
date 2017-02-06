@@ -2,12 +2,15 @@
 #include "param_manager.hpp"
 #include "model_driver.hpp"
 #include "testing.hpp"
+#include "utilities.hpp"
 #include <fstream>
 #include <sstream>
 #include <limits>
 #include "adaptors/mosquito_population_adaptor.hpp"
 #include "adaptors/bite_rate_adaptor.hpp"
 #include "adaptors/output_interval_adaptor.hpp"
+
+#include "host.hpp"
 
 void parse_parameters_from_cmd(int argc, char* argv[], ModelDriver& model);
 void parse_adaptor_from_cmd(const std::string& adaptorType, const std::string& argList, ModelDriver& model);
@@ -17,13 +20,26 @@ int main(int argc, char* argv[])
     ParamManager::instance(); //Initialise the instance!
     ModelDriver model; //Empty project so we can setup references / pointers.
     parse_parameters_from_cmd(argc, argv, model); //Throws exception if fails.
-
-    //ParamManager::instance().add_adaptor(new MosquitoPopulationAdaptor(4, 8, 5020, model.get_mos_manager()));
-    //ParamManager::instance().add_adaptor(new MosquitoPopulationAdaptor(8, 12, 4980, model.get_mos_manager()));
-    //ParamManager::instance().add_adaptor(new BiteRateAdaptor(8, 12, 0.1));
-    //ParamManager::instance().add_adaptor(new OutputIntervalAdaptor(6, 10, 1));
-
     ParamManager::instance().recalculate_derived_parameters();
+
+    //ParamManager::instance().set_float("cross_immunity", 3);
+    ////ParamManager::instance().set_int("num_phenotypes", 300);
+    //ParamManager::instance().recalculate_derived_parameters();
+    //auto mask = ParamManager::instance().get_immunity_mask();
+    //utilities::arrayToFile(mask, "immunity_mask.csv");
+
+    //Host host;
+    //std::vector<unsigned int> strain1 = {100*128};
+    //host.infect(strain1);
+    //utilities::arrayToFile(host.immuneState, "test_immune_state1.csv");
+
+    //std::vector<unsigned int> strain2 = {150*128};
+    //host.infect(strain2);
+    //utilities::arrayToFile(host.immuneState, "test_immune_state2.csv");
+
+    //for (float f : ParamManager::instance().get_immunity_mask())
+    //    std::cout << f << "\n";
+
     model.run_model();
 
     return 0;

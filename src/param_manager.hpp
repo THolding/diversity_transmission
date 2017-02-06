@@ -20,6 +20,7 @@ private:
     std::array<float, 2> recombination_cumu_p;
 
     BITE_FREQUENCY_TABLE cumulativeBiteFrequencyDistribution;
+    std::list<float> immunityMask;
 
     std::list<Adaptor*> adaptors;
 
@@ -52,8 +53,10 @@ public:
     bool recalculate_derived_parameters();
     bool recalculate_recombination_distributions();
     void recalculate_cumulative_bite_frequency_distribution();
-    const BITE_FREQUENCY_TABLE& get_cumulative_bite_frequency_distribution() const { return cumulativeBiteFrequencyDistribution;};
+    const BITE_FREQUENCY_TABLE& get_cumulative_bite_frequency_distribution() const { return cumulativeBiteFrequencyDistribution; }
     void recalculate_output_array_size_needed();
+    void recalculate_immunity_mask();
+    const std::list<float>& get_immunity_mask() const { return immunityMask; }
 
     ParamManager(ParamManager const&) = delete; //disable copy construction
     void operator=(ParamManager const&) = delete; //disable copy assignment

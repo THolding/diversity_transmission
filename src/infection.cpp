@@ -1,5 +1,6 @@
 #include "infection.hpp"
 #include "param_manager.hpp"
+#include "utilities.hpp"
 
 #include <iostream>
 
@@ -16,13 +17,13 @@ float infectivity_kernal(const Strain& strain, const ImmuneState& immuneState)
 }
 
 
-unsigned short duration_kernal(const Strain& strain, ImmuneState& immuneState)
+unsigned short duration_kernal(const Strain& strain, const ImmuneState& immuneState)
 {
     float duration = 0.0;
     for (const Antigen antigen : strain)
     {
-        duration += ParamManager::instance().get_float("infection_duration_scale") * (1.0-immuneState[get_phenotype_id(antigen)]);
-        immuneState[get_phenotype_id(antigen)] = 1.0; //Temp - stops multiple expression
+        duration += ParamManager::instance().get_float("infection_duration_scale") * (1.0-immuneState.at(get_phenotype_id(antigen)));
+        //immuneState[get_phenotype_id(antigen)] = 1.0; //Temp - stops multiple expression
         //std::cout << "\t\tDurationCalc: " << duration << "\timmuneStata[x]: " << immuneState[get_phenotype_id(antigen)] << "\n";
     }
 
@@ -30,15 +31,25 @@ unsigned short duration_kernal(const Strain& strain, ImmuneState& immuneState)
 }
 
 
-/*void exposure_kernal(const Strain& strain, ImmuneState& immuneState)
+void exposure_kernal(const Strain& strain, ImmuneState& immuneState)
 {
-    for (const Antigen antigen : strain)
-    {
-        immuneState[get_phenotype_id(antigen)] = 1.0;
-        //if (immuneState[get_phenotype_id(antigen)] < 1.0)
-        //    immuneState[get_phenotype_id(antigen)] += 0.9;
+    const std::list<float>& immunityMask = ParamManager::instance().get_immunity_mask();
+    unsigned int tailSize = (immunityMask.size()-1)/2;
 
-        //if (immuneState[get_phenotype_id(antigen)] > 1.0)
-        //    immuneState[get_phenotype_id(antigen)] = 1.0;
+    for (const Antigen parasiteAntigen : strain)
+    {
+        unsigned int targetAntigenID = get_phenotype_id(parasiteAntigen);
+        auto itr = immunityMask.begin();
+        unsigned int curAntigen = utilities::wrap((int)targetAntigenID-tailSize, 0, ParamManager::instance().get_int("num_phenotypes"));
+        while (itr != immunityMask.end())
+        {
+            immuneState[curAntigen] += (*itr);
+            if (immuneState[curAntigen] > 1.0)
+                immuneState[curAntigen] = 1.0;
+
+            //increment counters
+            curAntigen = utilities::wrap(curAntigen+1, 0, ParamManager::instance().get_int("num_phenotypes"));
+            itr++;
+        }
     }
-}*/
+}

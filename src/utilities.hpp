@@ -15,6 +15,8 @@ namespace utilities
     float random_float01(); //Returns a number on the interval [0, 1]
     float random_float_m1_1(); //Returns a number on the interval [-1, 1]
 
+    int wrap(int number, int low, int high);
+
     long factorial(unsigned int k);
 
     template <typename T>

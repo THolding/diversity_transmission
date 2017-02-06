@@ -2,6 +2,7 @@
 #include "param_manager.hpp"
 #include <cstdlib>
 #include <ctime>
+#include <cmath>
 #include <stdexcept>
 
 void utilities::initialise_random()
@@ -15,6 +16,20 @@ void utilities::initialise_random()
 
     file.flush();
     file.close();
+}
+
+int utilities::wrap(int number, int low, int high)
+{
+    if (number >= high)
+        number -= high * (std::floor(number/high));
+    else if (number < low)
+    {
+        //int toAdd = (std::floor(std::abs(number) / high)+1) * high;
+        //number += toAdd;
+        number+=(std::floor(std::abs(number) / high)+1) * high;
+    }
+
+    return number;
 }
 
 int utilities::random(int start, int end)
