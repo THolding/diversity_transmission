@@ -22,6 +22,13 @@ int main(int argc, char* argv[])
     parse_parameters_from_cmd(argc, argv, model); //Throws exception if fails.
     ParamManager::instance().recalculate_derived_parameters();
 
+
+    ParamManager::instance().set_int("run_time", 3000);
+    ParamManager::instance().set_int("burn_in_period", 1000);
+    ParamManager::instance().set_int("output_interval", 150);
+    //ParamManager::instance().set_bool("output_antigen_frequency", true);
+    //ParamManager::instance().recalculate_derived_parameters();
+
     //ParamManager::instance().set_float("cross_immunity", 3);
     ////ParamManager::instance().set_int("num_phenotypes", 300);
     //ParamManager::instance().recalculate_derived_parameters();

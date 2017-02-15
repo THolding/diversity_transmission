@@ -20,10 +20,14 @@ void Output::preinitialise_output_storage()
 
     mPrevalence.reserve(sizeNeeded);
 
-    hostDiversity.reserve(sizeNeeded);
-    antigenicHostDiversity.reserve(sizeNeeded);
+    circulatingAntigenDiversity.reserve(sizeNeeded);
+    shannonEntropy.reserve(sizeNeeded);
+    //antigenicHostDiversity.reserve(sizeNeeded);
 
     eir.reserve(sizeNeeded);
+
+    if (ParamManager::instance().get_bool("output_antigen_frequency"))
+        antigenFrequency.reserve(sizeNeeded);
 
     if (ParamManager::instance().get_bool("dyn_num_mosquitoes"))
         numMosquitoesList.reserve(sizeNeeded);
@@ -53,10 +57,14 @@ void Output::append_output(const unsigned int timestep, const Hosts& hosts, cons
     calc_mosquito_infection_metrics(mosquitoes, mPrev);
     mPrevalence.push_back(mPrev);
 
-    hostDiversity.push_back(calc_host_diversity(hosts));
-    antigenicHostDiversity.push_back(calc_antigen_host_diversity(hosts));
+    float curShannonEntropy;
+    circulatingAntigenDiversity.push_back(calc_circulating_antigen_diversity(hosts, mosquitoes, curShannonEntropy));
+    shannonEntropy.push_back(curShannonEntropy);
+    //antigenicHostDiversity.push_back(calc_antigen_host_diversity(hosts));
 
     eir.push_back(calc_eir(timestep)); //Used callback counter and self-resets.
+
+    log_antigen_frequency(hosts, mosquitoes);
 
     log_dyn_params();
 
@@ -74,10 +82,16 @@ void Output::export_output(const std::string runName, const std::string filePath
 
     utilities::arrayToFile(mPrevalence, filePath+runName+"_mosquito_prevalences.csv");
 
-    utilities::arrayToFile(hostDiversity, filePath+runName+"_host_diversity.csv");
-    utilities::arrayToFile(antigenicHostDiversity, filePath+runName+"_antigenic_host_diversity.csv");
+    utilities::arrayToFile(circulatingAntigenDiversity, filePath+runName+"_circulating_antigen_diversity.csv");
+    utilities::arrayToFile(shannonEntropy, filePath+runName+"_shannon_entropy_diversity.csv");
+
+    //utilities::arrayToFile(hostDiversity, filePath+runName+"_host_diversity.csv");
+    //utilities::arrayToFile(antigenicHostDiversity, filePath+runName+"_antigenic_host_diversity.csv");
 
     utilities::arrayToFile(eir, filePath+runName+"_eir.csv");
+
+    if (ParamManager::instance().get_bool("output_antigen_frequency"))
+        utilities::matrixToFile(antigenFrequency, filePath+runName+"_circulating_antigen_frequency.csv", ", ");
 
     if (ParamManager::instance().get_bool("dyn_num_mosquitoes"))
         utilities::arrayToFile(numMosquitoesList, filePath+runName+"_num_mosquitoes.csv");
@@ -154,7 +168,7 @@ void Output::calc_host_immunity_metrics(const Hosts& hosts, float& immunityMean,
     immunityVariance = immunityVariance / ParamManager::instance().get_int("num_hosts");
 }
 
-float Output::calc_host_diversity(const Hosts& hosts)
+/*float Output::calc_host_diversity(const Hosts& hosts)
 {
     std::unordered_map<std::string, unsigned int> diversityPool;
 
@@ -175,9 +189,9 @@ float Output::calc_host_diversity(const Hosts& hosts)
     }
 
     return diversityPool.size();
-}
+}*/
 
-float Output::calc_antigen_host_diversity(const Hosts& hosts)
+/*float Output::calc_antigen_host_diversity(const Hosts& hosts)
 {
     std::unordered_map<Antigen, unsigned int> diversityPool;
 
@@ -207,13 +221,87 @@ float Output::calc_antigen_host_diversity(const Hosts& hosts)
 
     float antigenDiversity = (float)diversityPool.size() / (float)ParamManager::instance().get_int("num_phenotypes");
     return antigenDiversity;
+}*/
+
+float Output::calc_circulating_antigen_diversity(const Hosts& hosts, const Mosquitoes& mosquitoes, float& shannonEntropy)
+{
+    std::unordered_map<Antigen, unsigned int> diversityPool;
+
+    for (const Host& host : hosts)
+    {
+        if (host.infection1.infected)
+        {
+            for (const Antigen antigen : host.infection1.strain)
+            {
+                if (diversityPool.count(get_phenotype_id(antigen)) == 0)
+                {
+                    diversityPool[get_phenotype_id(antigen)] = 1;
+                }
+                else
+                    diversityPool[get_phenotype_id(antigen)] = diversityPool[get_phenotype_id(antigen)]+1;
+            }
+        }
+        if (host.infection2.infected)
+        {
+            for (const Antigen antigen : host.infection2.strain)
+            {
+                if (diversityPool.count(get_phenotype_id(antigen)) == 0)
+                {
+                    diversityPool[get_phenotype_id(antigen)] = 1;
+                }
+                else
+                    diversityPool[get_phenotype_id(antigen)] = diversityPool[get_phenotype_id(antigen)]+1;
+            }
+        }
+    }
+
+    for (const Mosquito& mosquito : mosquitoes)
+    {
+        if (mosquito.infection.infected)
+        {
+            for (const Antigen antigen : mosquito.infection.strain)
+            {
+                if (diversityPool.count(get_phenotype_id(antigen)) == 0)
+                    diversityPool[get_phenotype_id(antigen)] = 1;
+                else
+                    diversityPool[get_phenotype_id(antigen)] = diversityPool[get_phenotype_id(antigen)]+1;
+            }
+        }
+    }
+
+    float antigenDiversity = (float)diversityPool.size() / (float)ParamManager::instance().get_int("num_phenotypes");
+
+    shannonEntropy = calc_shannon_entropy(diversityPool);
+    return antigenDiversity;
+}
+
+float Output::calc_shannon_entropy(const std::unordered_map<Antigen, unsigned int>& diversityPool)
+{
+    std::vector<float> proportions;
+    float total = 0.0;
+    for (const auto& item : diversityPool)
+    {
+        proportions.push_back(item.second);
+        total += item.second;
+    }
+    if (total == 0.0)
+        return 0.0;
+    for (unsigned int i=0; i<proportions.size(); ++i)
+        proportions[i] = proportions[i] / total;
+
+    float entropy = 0.0;
+    for (float proportion : proportions)
+        entropy -= proportion * std::log(proportion);
+
+    return entropy;
 }
 
 //returns daily EIR.
 float Output::calc_eir(const unsigned int currentTime)
 {
+    //Calculates this because output interval can change over the course of a simulation.
     unsigned int timeSinceLastUpdate = currentTime - lastUpdateTime;
-    ////////THIS MIGHT BE BROKEN! Must cache previous call time and calculate EIR accordingly.
+
     float eir = (float)curNumInfectiousBites / (float)ParamManager::instance().get_int("num_hosts");
     eir = eir / (float)timeSinceLastUpdate;
 
@@ -221,6 +309,38 @@ float Output::calc_eir(const unsigned int currentTime)
     curNumInfectiousBites = 0;
 
     return eir;
+}
+
+void Output::antigen_counter_helper(std::vector<unsigned int>& antigenFreqs, const Strain& strain)
+{
+    for (const Antigen& antigen : strain)
+        antigenFreqs[get_phenotype_id(antigen)] += 1;
+}
+
+void Output::log_antigen_frequency(const Hosts& hosts, const Mosquitoes& mosquitoes)
+{
+    if (ParamManager::instance().get_bool("output_antigen_frequency") == false)
+        return;
+
+    std::vector<unsigned int> antigenFreqs(ParamManager::instance().get_int("num_phenotypes"));
+
+    //All host infections
+    for (const Host& host : hosts)
+    {
+        if (host.infection1.infected)
+            antigen_counter_helper(antigenFreqs, host.infection1.strain);
+        if (host.infection2.infected)
+            antigen_counter_helper(antigenFreqs, host.infection2.strain);
+    }
+
+    //All mosquito infections
+    for (const Mosquito& mosquito : mosquitoes)
+    {
+        if (mosquito.is_active() && mosquito.infection.infected)
+            antigen_counter_helper(antigenFreqs, mosquito.infection.strain);
+    }
+
+    antigenFrequency.push_back(antigenFreqs);
 }
 
 void Output::log_dyn_params()

@@ -23,27 +23,39 @@ def read_dataset(_filePath, runName=None):
                 break;
     if runName == None:
         runName = "";
-    
+        
     
     data = {}
     ###Import all data
-    data["t_days"] = np.loadtxt(filePath+runName+"_timesteps.csv", delimiter="\n")
-    data["t_years"] = data["t_days"]/365.0
-    data["mosPrev"] = np.loadtxt(filePath+runName+"_mosquito_prevalences.csv", delimiter="\n")
-    data["hostPrev"] = np.loadtxt(filePath+runName+"_host_prevalences.csv", delimiter="\n")
-    data["hostMOI"] = np.loadtxt(filePath+runName+"_host_moi.csv", delimiter="\n")
-    data["immunityVariance"] = np.loadtxt(filePath+runName+"_host_immunity_variance.csv", delimiter="\n")
-    data["meanImmunity"] = np.loadtxt(filePath+runName+"_host_immunity_mean.csv", delimiter="\n")
-    data["hostDiversity"] = np.loadtxt(filePath+runName+"_host_diversity.csv", delimiter="\n")
-    data["antigenHostDiversity"] = np.loadtxt(filePath+runName+"_antigenic_host_diversity.csv", delimiter="\n")
-    data["eir"] = np.loadtxt(filePath+runName+"_eir.csv", delimiter="\n")
+    data["t_days"] = np.array(np.loadtxt(filePath+runName+"_timesteps.csv", delimiter="\n"))
+    data["t_years"] = np.array(data["t_days"]/365.0)
+    data["mosPrev"] = np.array(np.loadtxt(filePath+runName+"_mosquito_prevalences.csv", delimiter="\n"))
+    data["hostPrev"] = np.array(np.loadtxt(filePath+runName+"_host_prevalences.csv", delimiter="\n"))
+    data["hostMOI"] = np.array(np.loadtxt(filePath+runName+"_host_moi.csv", delimiter="\n"))
+    data["immunityVariance"] = np.array(np.loadtxt(filePath+runName+"_host_immunity_variance.csv", delimiter="\n"))
+    data["meanImmunity"] = np.array(np.loadtxt(filePath+runName+"_host_immunity_mean.csv", delimiter="\n"))
+    data["hostDiversity"] = np.array(np.loadtxt(filePath+runName+"_host_diversity.csv", delimiter="\n"))
+    data["antigenHostDiversity"] = np.array(np.loadtxt(filePath+runName+"_antigenic_host_diversity.csv", delimiter="\n"))
+    data["eir"] = np.array(np.loadtxt(filePath+runName+"_eir.csv", delimiter="\n"))
     
     ###Calculate other metrics
-    data["immuneProportion"] = data["meanImmunity"] / data["antigenHostDiversity"];
+    data["immuneProportion"] = np.array(data["meanImmunity"] / data["antigenHostDiversity"]);
     
     ###File path and run name
     data["filePath"] = filePath
     data["runName"] = runName
+    
+    
+    #Some output files are only there under certain circumstances!
+    #Timeseries of number of mosquitoes is only outputted if mosquito population is dynamic:
+    if os.path.isfile(filePath+runName+"_num_mosquitoes.csv"):
+        data["num_mosquitoes"] = np.array(np.loadtxt(filePath+runName+"_num_mosquitoes.csv"));
+    #Timeseries of bite rate is only outputted if bite rate is dynamic
+    if os.path.isfile(filePath+runName+"_bite_rate.csv"):
+        data["bite_rate"] = np.array(np.loadtxt(filePath+runName+"_bite_rate.csv"));
+    #Antigen frequencies are computensively intensive to calculate so are only outputted if specifically requested:
+    if os.path.isfile(filePath+runName+"_antigen_frequency.csv"):
+        data["antigen_frequency"] = np.array(np.genfromtxt(filePath+runName+"_antigen_frequency.csv", delimiter=","))
     
     return data
 
@@ -55,42 +67,52 @@ def summary_plot(data, saveFig=False, figSavePath=None, burnInPeriod=-1):
     plt.figure(figsize=(12,10))
     plt.subplot(2,2,1);
     plt.title("prevalence")
-    if burnInPeriod > 0:
-        plt.plot(burnX, burnY, 'y:', linewidth = 2, label="burn in period")
     plt.plot(data["t_years"], data["hostPrev"], 'k', linewidth=3, label="host prevalence");
-    plt.plot(data["t_years"], data["mosPrev"], 'r:', linewidth=3, label="mosquito prevalence");
+    plt.plot(data["t_years"], data["mosPrev"], 'r--', linewidth=3, label="mosquito prevalence");
     plt.legend(loc=0, fontsize=9)
     plt.ylim(0,1)
     plt.ylabel("prevalence")
     plt.xlabel("time (years)")
+    if burnInPeriod > 0:
+        plt.plot(burnX, burnY, 'y:', linewidth = 2, label="burn in period")
     
     plt.subplot(2,2,2);
     plt.title("transmission")
+    plt.plot(data["t_years"], data["eir"], 'k', linewidth=3)
+    plt.ylabel("EIR (daily)")
+    plt.xlabel("time (years)")
+    plt.ylim(0, 0.2)#np.max(data["eir"]))
     if burnInPeriod > 0:
         plt.plot(burnX, burnY, 'y:', linewidth = 2, label="burn in period")
-    plt.plot(data["t_years"], data["eir"], 'k', linewidth=3)
-    plt.ylabel("EIR")
-    plt.xlabel("time (years)")
     
     plt.subplot(2,2,3);
     plt.title("diversity")
-    if burnInPeriod > 0:
-        plt.plot(burnX, burnY, 'y:', linewidth = 2, label="burn in period")
     plt.plot(data["t_years"], data["antigenHostDiversity"], 'k', linewidth=3, label="diversity")
     plt.ylim(0,1)
     plt.ylabel(r"diversity (proportion of $a_{max}$)")
     plt.xlabel("time (years)")
-    
-    plt.subplot(2,2,4);
-    plt.title("immunity")
     if burnInPeriod > 0:
         plt.plot(burnX, burnY, 'y:', linewidth = 2, label="burn in period")
-    plt.plot(data["t_years"], data["meanImmunity"], 'k', linewidth=3, label=r"proportion of $a_{max}$")
-    plt.plot(data["t_years"], data["immuneProportion"], 'r:', linewidth=2, label="immunity/diversity")
-    plt.legend(loc=0, fontsize=9)
-    plt.ylabel("immunity")
+    
+    ax1 = plt.subplot(2,2,4);
+    plt.title("immunity")    
     plt.xlabel("time (years)")
-    plt.ylim(0,1)    
+    
+    immuneProportion = np.array(data["immuneProportion"])
+    immuneProportion[np.isnan(immuneProportion)] = 0.0
+    plt.plot(data["t_years"], immuneProportion, 'k', linewidth=3)
+    plt.ylabel("immunity (proportion of circulating diversity)")
+    plt.ylim(0, np.max(immuneProportion));
+    ax1.twinx();
+    plt.plot(data["t_years"], data["meanImmunity"], 'r--', linewidth=3)
+    print immuneProportion
+    plt.ylabel(r"immunity (proportion of $a_{max}$)", color="red")
+    plt.ylim(0,1);
+    if burnInPeriod > 0:
+        plt.plot(burnX, burnY, 'y:', linewidth = 2, label="burn in period")    
+        #plt.plot(burnX, [0, max(1, np.max(data["immuneProportion"]))], 'y:', linewidth = 2, label="burn in period")    
+    
+    plt.tight_layout(pad=2.5)#, w_pad=0.5, h_pad=1.0)
     
     if figSavePath == None:
         figSavePath = data["filePath"]
@@ -129,7 +151,7 @@ def phase_plot(_time, _xParam, _yParam, title="default title", xlabel="paramX", 
     if figSavePath == "":
         figSavePath = "/";
     elif figSavePath[-1] != '/':
-        figSavePath+='/'
+        figSavePath+='/';
     
     if figFilename[-4:] != ".pdf":
         figFilename+=".pdf";
@@ -163,7 +185,7 @@ def phase_plot(_time, _xParam, _yParam, title="default title", xlabel="paramX", 
     
     if saveFig == True:
         plt.savefig(figSavePath+figFilename);
-    plt.close();
+        plt.close();
         
 
 

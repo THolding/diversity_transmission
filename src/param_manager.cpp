@@ -38,6 +38,9 @@ ParamManager::ParamManager()
     paramsFloat["infectivity_scale"] = 0.5f;
     paramsFloat["cross_immunity"] = 0.0f;
 
+    ////Output management
+    paramsBool["output_antigen_frequency"] = false; //Outputs the frequency with which antigens are present in the parasite population.
+
     ////Dynamic support parameters.
     //Dynamic mosquito population (MosquitoPopulationAdaptor).
     paramsBool["dyn_num_mosquitoes"] = false; //Used to know whether or not to output timeseries of number of mosquitoes for example.

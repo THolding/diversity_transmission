@@ -24,10 +24,13 @@ private:
 
     std::vector<float> mPrevalence;
 
-    std::vector<unsigned int> hostDiversity;
-    std::vector<float> antigenicHostDiversity;
+    std::vector<float> circulatingAntigenDiversity;
+    std::vector<float> shannonEntropy; //shannon entropy of antigens in circulation
+    //std::vector<float> antigenicHostDiversity; //antigen count in circulation
 
     std::vector<float> eir;
+
+    std::vector<std::vector<unsigned int>> antigenFrequency;
 
     std::vector<unsigned int> numMosquitoesList;
     std::vector<float> biteRateList;
@@ -37,10 +40,14 @@ private:
 
     void calc_host_immunity_metrics(const Hosts& hosts, float& immunityMean, float& immunityVariance);
 
-    float calc_host_diversity(const Hosts& hosts);
-    float calc_antigen_host_diversity(const Hosts& hosts);
+    float calc_circulating_antigen_diversity(const Hosts& hosts, const Mosquitoes& mosquitoes, float& shannonEntropy);
+    //float calc_antigen_host_diversity(const Hosts& hosts);
 
     float calc_eir(const unsigned int currentTime);
+    float calc_shannon_entropy(const std::unordered_map<Antigen, unsigned int>& diversityPool);
+
+    void antigen_counter_helper(std::vector<unsigned int>& antigenFreqs, const Strain& strain);
+    void log_antigen_frequency(const Hosts& hosts, const Mosquitoes& mosquitos);
     void log_dyn_params();
 
 public:
