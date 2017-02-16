@@ -23,9 +23,9 @@ int main(int argc, char* argv[])
     ParamManager::instance().recalculate_derived_parameters();
 
 
-    ParamManager::instance().set_int("run_time", 3000);
-    ParamManager::instance().set_int("burn_in_period", 1000);
-    ParamManager::instance().set_int("output_interval", 150);
+    //ParamManager::instance().set_int("run_time", 3000);
+    //ParamManager::instance().set_int("burn_in_period", 1000);
+    //ParamManager::instance().set_int("output_interval", 150);
     //ParamManager::instance().set_bool("output_antigen_frequency", true);
     //ParamManager::instance().recalculate_derived_parameters();
 
