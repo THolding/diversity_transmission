@@ -34,6 +34,7 @@ private:
 
     std::vector<unsigned int> numMosquitoesList;
     std::vector<float> biteRateList;
+    std::vector<float> intragenicRecombinationPList;
 
     void calc_host_infection_metrics(const Hosts& hosts, float& prevalence, float& multiplicityOfInfection);
     void calc_mosquito_infection_metrics(const Mosquitoes& mosquitoes, float& prevalence);

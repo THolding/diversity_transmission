@@ -35,6 +35,9 @@ void Output::preinitialise_output_storage()
     if (ParamManager::instance().get_bool("dyn_bite_rate"))
         biteRateList.reserve(sizeNeeded);
 
+    if (ParamManager::instance().get_bool("dyn_intragenic_recombination_p"))
+        intragenicRecombinationPList.reserve(sizeNeeded);
+
     curNumInfectiousBites = 0;
     lastUpdateTime = -1;
 }
@@ -98,6 +101,9 @@ void Output::export_output(const std::string runName, const std::string filePath
 
     if (ParamManager::instance().get_bool("dyn_bite_rate"))
         utilities::arrayToFile(biteRateList, filePath+runName+"_bite_rate.csv");
+
+    if (ParamManager::instance().get_bool("dyn_intragenic_recombination_p"))
+        utilities::arrayToFile(intragenicRecombinationPList, filePath+runName+"_intragenic_recombination_p.csv");
 }
 
 void Output::register_infectious_bite()
@@ -350,4 +356,7 @@ void Output::log_dyn_params()
 
     if (ParamManager::instance().get_bool("dyn_bite_rate"))
         biteRateList.push_back(ParamManager::instance().get_float("bite_rate"));
+
+    if (ParamManager::instance().get_bool("dyn_intragenic_recombination_p"))
+        intragenicRecombinationPList.push_back(ParamManager::instance().get_float("intragenic_recombination_p"));
 }

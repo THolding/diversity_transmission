@@ -35,6 +35,8 @@
 		<Unit filename="src/adaptors/adaptor.hpp" />
 		<Unit filename="src/adaptors/bite_rate_adaptor.cpp" />
 		<Unit filename="src/adaptors/bite_rate_adaptor.hpp" />
+		<Unit filename="src/adaptors/intragenic_recombination_p_adaptor.cpp" />
+		<Unit filename="src/adaptors/intragenic_recombination_p_adaptor.hpp" />
 		<Unit filename="src/adaptors/mosquito_population_adaptor.cpp" />
 		<Unit filename="src/adaptors/mosquito_population_adaptor.hpp" />
 		<Unit filename="src/adaptors/output_interval_adaptor.cpp" />

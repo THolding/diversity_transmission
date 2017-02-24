@@ -47,6 +47,7 @@ ParamManager::ParamManager()
     paramsInt["max_num_mosquitoes"] = paramsInt["initial_num_mosquitoes"]; //Used to reserve space in vectors.
     //Dynamic bite rate (BiteRateAdaptor).
     paramsBool["dyn_bite_rate"] = false;
+    paramsBool["dyn_intragenic_recombination_p"] = false;
 
     //paramsBool["dyn_num_hosts"] = false;
     //paramsInt["num_hosts_max"] = 0; //Used to reserve space in vectors.

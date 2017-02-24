@@ -8,7 +8,7 @@ BiteRateAdaptor::BiteRateAdaptor(unsigned int tStart, unsigned int tStop, float 
 {
     ParamManager::instance().set_bool("dyn_bite_rate", true);
     if (targetValue < 0.0f)
-        throw std::runtime_error("BiteRateAdaptor cannot have target bite rate of less than 1.");
+        throw std::runtime_error("BiteRateAdaptor cannot have target bite rate of less than 0.");
 }
 
 void BiteRateAdaptor::update(unsigned int time)

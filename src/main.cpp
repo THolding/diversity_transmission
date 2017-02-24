@@ -9,6 +9,7 @@
 #include "adaptors/mosquito_population_adaptor.hpp"
 #include "adaptors/bite_rate_adaptor.hpp"
 #include "adaptors/output_interval_adaptor.hpp"
+#include "adaptors/intragenic_recombination_p_adaptor.hpp"
 
 #include "host.hpp"
 
@@ -23,9 +24,13 @@ int main(int argc, char* argv[])
     ParamManager::instance().recalculate_derived_parameters();
 
 
-    //ParamManager::instance().set_int("run_time", 3000);
-    //ParamManager::instance().set_int("burn_in_period", 1000);
-    //ParamManager::instance().set_int("output_interval", 150);
+    /*ParamManager::instance().set_int("run_time", 10);
+    ParamManager::instance().set_int("burn_in_period", 0);
+    ParamManager::instance().set_int("output_interval", 1);
+    ParamManager::instance().set_float("intragenic_recombination_p", 0.1);
+    ParamManager::instance().add_adaptor(new IntragenicRecombinationPAdaptor(3, 6, 0.5));
+    ParamManager::instance().recalculate_derived_parameters(); */
+
     //ParamManager::instance().set_bool("output_antigen_frequency", true);
     //ParamManager::instance().recalculate_derived_parameters();
 
@@ -115,6 +120,11 @@ void parse_adaptor_from_cmd(const std::string &adaptorType, const std::string &a
         float targetBiteRate = std::stof(curItem);
         ParamManager::instance().add_adaptor(new BiteRateAdaptor(tStart, tStop, targetBiteRate));
         std::cout << "Added bite_rate_adaptor.\n";
+    }
+    else if (adaptorType.find("intragenic_recombination_p_adaptor") != std::string::npos) {
+        float targetIntragenicRecombinationP = std::stof(curItem);
+        ParamManager::instance().add_adaptor(new IntragenicRecombinationPAdaptor(tStart, tStop, targetIntragenicRecombinationP));
+        std::cout << "Added intragenic_recombination_p_adaptor.\n";
     }
     else if (adaptorType.find("output_interval_adaptor") != std::string::npos) {
         unsigned int targetOutputInterval = std::stoi(curItem);
