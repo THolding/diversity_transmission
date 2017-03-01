@@ -42,12 +42,14 @@ private:
 
     void count_individual_antigens(std::vector<unsigned int>& antigenFreqs, std::unordered_map<Antigen, unsigned int>& antigenCounter, const Strain& strain);
     float calc_parasite_adaptedness(const std::vector<unsigned int> curAntigenFrequencies, const unsigned int antigenTotal, const Hosts& hosts);
+    static float calc_shannon_entropy(const std::vector<unsigned int>& curAntigenFrequency, const unsigned int totalAntigens);
     //float calc_shannon_entropy(const std::unordered_map<Antigen, unsigned int>& diversityPool);
-    float calc_shannon_entropy(const std::vector<unsigned int>& curAntigenFrequency);
+    //float calc_shannon_entropy(const std::vector<unsigned int>& curAntigenFrequency);
     //void antigen_counter_helper(std::vector<unsigned int>& antigenFreqs, const Strain& strain);
     void log_dyn_params();
 
 public:
+
     Output(ModelDriver* _model) : model(_model) {  }
     void preinitialise_output_storage();
     void append_output(const unsigned int timestep, const Hosts& hosts, const Mosquitoes& mosquitoes);

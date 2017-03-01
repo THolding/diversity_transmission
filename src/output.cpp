@@ -166,6 +166,7 @@ void Output::calc_dyn_metrics()
         intragenicRecombinationPList.push_back(ParamManager::instance().get_float("intragenic_recombination_p"));
 }
 
+
 //numCirculatingAntigens, shannon entropy, antigen frequency, parasite adaptedness
 //Optional: antigen frequency, parasite adaptedness
 void Output::calc_host_mosquito_dependent_metrics(const Hosts& hosts, const Mosquitoes& mosquitoes)
@@ -197,22 +198,48 @@ void Output::calc_host_mosquito_dependent_metrics(const Hosts& hosts, const Mosq
             count_individual_antigens(curAntigenFrequencies, antigenCounter, mosquito.infection.strain);
     }
 
-    //Calculate antigen frequencies by normalising by total
-    for (unsigned int i=0; i<curAntigenFrequencies.size(); ++i)
-        curAntigenFrequencies[i] = (float) curAntigenFrequencies[i] / (float) antigenTotal;
-    //if (ParamManager::instance().get_bool("output_antigen_frequency")) //Turns out we need to do this for shannon entropy anyway!
-    antigenFrequency.push_back(curAntigenFrequencies);
-
+    //Use frequency to calculate some outputs
     proportionCirculatingAntigens.push_back(((float)antigenCounter.size()) / ((float)ParamManager::instance().get_int("num_phenotypes")));
-    shannonEntropy.push_back(calc_shannon_entropy(curAntigenFrequencies));
+    shannonEntropy.push_back(Output::calc_shannon_entropy(curAntigenFrequencies, antigenTotal));
 
     //Calculate parasite adaptability
     if (ParamManager::instance().get_bool("output_parasite_adaptedness"))// && ParamManager::instance().get_bool("output_antigen_frequency"))
         parasiteAdaptedness.push_back(calc_parasite_adaptedness(curAntigenFrequencies, antigenTotal, hosts));
+
+    //Calculate antigen proportions by normalising by total
+    if (ParamManager::instance().get_bool("output_antigen_frequency")) //Turns out we need to do this for shannon entropy anyway!
+        antigenFrequency.push_back(curAntigenFrequencies);
+
+    //No need to calculate antigen proportions from antigen frequencies?
+    //for (unsigned int i=0; i<curAntigenFrequencies.size(); ++i)
+    //    curAntigenFrequencies[i] = (float) curAntigenFrequencies[i] / (float) antigenTotal;
+}
+
+float Output::calc_shannon_entropy(const std::vector<unsigned int>& curAntigenFrequency, const unsigned int totalAntigens)//const std::unordered_map<Antigen, const unsigned int>& curAntigenFrequency)
+{
+    if (totalAntigens == 0)
+        return 0.0;
+
+    std::vector<float> proportions;
+    for (unsigned int i=0; i<curAntigenFrequency.size(); ++i) {
+        proportions.push_back((float)curAntigenFrequency[i]/(float)totalAntigens);
+    }
+
+    float entropy = 0.0;
+    for (float proportion : proportions) {
+        if (proportion != 0)
+            entropy -= proportion * std::log(proportion);
+    }
+    //std::cout << "Entropy = " << entropy << "\n";
+
+    return entropy;
 }
 
 float Output::calc_parasite_adaptedness(const std::vector<unsigned int> curAntigenFrequencies, const unsigned int antigenTotal, const Hosts& hosts)
 {
+    if (antigenTotal == 0)
+        return 0;
+
     //Calculate susceptibility
     std::vector<float> susceptibility;
     for (unsigned int a=0; a<ParamManager::instance().get_int("num_phenotypes"); ++a)
@@ -226,8 +253,9 @@ float Output::calc_parasite_adaptedness(const std::vector<unsigned int> curAntig
     float parasiteAdaptedness = 0.0f;
     //For each antigen apply the forumlat and sum
     for (unsigned int a=0; a<ParamManager::instance().get_int("num_phenotypes"); ++a)
-        parasiteAdaptedness = (curAntigenFrequencies[a] / (float) antigenTotal) * susceptibility[a];
+        parasiteAdaptedness += (curAntigenFrequencies[a] / (float) antigenTotal) * susceptibility[a];
 
+    std::cout << "Parasite adaptedness = " << parasiteAdaptedness << "\n";
     return parasiteAdaptedness;
 }
 
@@ -235,32 +263,11 @@ void Output::count_individual_antigens(std::vector<unsigned int>& antigenFreqs, 
 {
     for (const Antigen& antigen : strain)
     {
-        if (ParamManager::instance().get_bool("output_antigen_frequency"))
-            antigenFreqs[get_phenotype_id(antigen)] += 1;
+        //if (ParamManager::instance().get_bool("output_antigen_frequency"))
+        antigenFreqs[get_phenotype_id(antigen)] += 1;
         if (antigenCounter.find(get_phenotype_id(antigen)) == antigenCounter.end()) //if antigen type hasn't already been counted...
-        //if (antigenCounter[get_phenotype_id(antigen)].count == 0)
             antigenCounter[get_phenotype_id(antigen)] = 1;
     }
 }
 
-float Output::calc_shannon_entropy(const std::vector<unsigned int>& curAntigenFrequency)//const std::unordered_map<Antigen, const unsigned int>& curAntigenFrequency)
-{
-    std::vector<float> proportions;
-    float total = 0.0;
-    for (const auto& item : curAntigenFrequency)
-    {
-        proportions.push_back(item);
-        total += item;
-    }
-    if (total == 0.0)
-        return 0.0;
-    for (unsigned int i=0; i<proportions.size(); ++i)
-        proportions[i] = proportions[i] / total;
-
-    float entropy = 0.0;
-    for (float proportion : proportions)
-        entropy -= proportion * std::log(proportion);
-
-    return entropy;
-}
 

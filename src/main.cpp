@@ -12,6 +12,7 @@
 #include "adaptors/intragenic_recombination_p_adaptor.hpp"
 
 #include "host.hpp"
+#include "output.hpp"
 
 void parse_parameters_from_cmd(int argc, char* argv[], ModelDriver& model);
 void parse_adaptor_from_cmd(const std::string& adaptorType, const std::string& argList, ModelDriver& model);
@@ -32,7 +33,7 @@ int main(int argc, char* argv[])
     //ParamManager::instance().add_adaptor(new IntragenicRecombinationPAdaptor(3, 6, 0.5));
     //ParamManager::instance().recalculate_derived_parameters();
 
-    //ParamManager::instance().set_bool("output_antigen_frequency", true);
+    //ParamManager::instance().set_bool("output_parasite_adaptedness", true);
     //ParamManager::instance().recalculate_derived_parameters();
 
     //ParamManager::instance().set_float("cross_immunity", 3);
