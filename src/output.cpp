@@ -246,7 +246,7 @@ float Output::calc_parasite_adaptedness(const std::vector<unsigned int> curAntig
     {
         susceptibility.push_back(0.0);
         for (unsigned int h=0; h<hosts.size(); ++h)
-            susceptibility[a] = susceptibility[a] + hosts[h].immuneState[a];
+            susceptibility[a] = susceptibility[a] + 1.0 - hosts[h].immuneState[a];
         susceptibility[a] = susceptibility[a] / (float)hosts.size();
     }
 
