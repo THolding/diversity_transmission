@@ -40,6 +40,8 @@ ParamManager::ParamManager()
 
     ////Output management
     paramsBool["output_antigen_frequency"] = false; //Outputs the frequency with which antigens are present in the parasite population.
+    paramsBool["output_parasite_adaptedness"] = false; //Outputs a measure of how well the parasite population is adapted to the current host immunity
+    //paramsBool["output_shannon_entropy"] = true; //Outputs shannon entropy.
 
     ////Dynamic support parameters.
     //Dynamic mosquito population (MosquitoPopulationAdaptor).
@@ -66,6 +68,9 @@ bool ParamManager::recalculate_derived_parameters()
     recalculate_cumulative_bite_frequency_distribution();
     recalculate_output_array_size_needed();
     recalculate_immunity_mask();
+
+    //if (paramsBool["output_parasite_adaptedness"])
+    //    paramsBool["output_antigen_frequency"] = true;
 
     return true;
 }

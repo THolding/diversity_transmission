@@ -24,12 +24,13 @@ int main(int argc, char* argv[])
     ParamManager::instance().recalculate_derived_parameters();
 
 
-    /*ParamManager::instance().set_int("run_time", 10);
-    ParamManager::instance().set_int("burn_in_period", 0);
-    ParamManager::instance().set_int("output_interval", 1);
-    ParamManager::instance().set_float("intragenic_recombination_p", 0.1);
-    ParamManager::instance().add_adaptor(new IntragenicRecombinationPAdaptor(3, 6, 0.5));
-    ParamManager::instance().recalculate_derived_parameters(); */
+    //ParamManager::instance().set_int("run_time", 10);
+    //ParamManager::instance().set_int("burn_in_period", 0);
+    //ParamManager::instance().set_int("output_interval", 1);
+    //ParamManager::instance().set_float("intragenic_recombination_p", 0.1);
+    //ParamManager::instance().set_bool("output_parasite_adaptedness", true);
+    //ParamManager::instance().add_adaptor(new IntragenicRecombinationPAdaptor(3, 6, 0.5));
+    //ParamManager::instance().recalculate_derived_parameters();
 
     //ParamManager::instance().set_bool("output_antigen_frequency", true);
     //ParamManager::instance().recalculate_derived_parameters();
