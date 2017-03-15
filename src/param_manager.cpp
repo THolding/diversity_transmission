@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include <iostream>
+#include <omp.h>
 
 //Default parameters setup in private constructor.
 ParamManager::ParamManager()
@@ -14,7 +15,7 @@ ParamManager::ParamManager()
     std::cout << "Initialised ParamManager singleton instance.\n";
 
     paramsBool["verbose"] = false;
-    paramsInt["run_time"] = 50000;//50000;
+    paramsInt["run_time"] = 10000;//50000;
     paramsInt["output_interval"] = 250;//250;
     paramsInt["burn_in_period"] = 3000;//3000;
 
