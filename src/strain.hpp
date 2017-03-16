@@ -10,6 +10,8 @@ Antigen get_genotype_id(const Antigen antigen); //Returns just the first NUM_GEN
 
 std::string strain_phenotype_str(const Strain& strain);
 
+std::string strain_phenotype_str_ordered(const Strain& strain);
+
 //Returns a random antigen from the whole of genotypic / antigenic space.
 Antigen random_antigen();
 

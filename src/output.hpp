@@ -15,6 +15,7 @@ private:
     //Counters
     int lastUpdateTime = -1;
     unsigned int curNumInfectiousBites;
+    unsigned int cumulativeOutputCount;
 
     std::vector<unsigned int> timeLog;
     std::vector<float> hPrevalence; //Proportion of hosts which are infected
@@ -39,6 +40,9 @@ private:
     void calc_host_mosquito_dependent_metrics(const Hosts& hosts, const Mosquitoes& mosquitoes); //antigen diversity, shannon entropy, antigen frequency, parasite adaptedness
     void calc_time_dependent_metrics(const unsigned int currentTime); //time, daily EIR
     void calc_dyn_metrics();
+
+    //Calculates and outputs repertoire frequencies
+    void process_strain_structure_output(const Hosts& hosts, const Mosquitoes& mosquitoes);
 
     void count_individual_antigens(std::vector<unsigned int>& antigenFreqs, std::unordered_map<Antigen, unsigned int>& antigenCounter, const Strain& strain);
     float calc_parasite_adaptedness(const std::vector<unsigned int> curAntigenFrequencies, const unsigned int antigenTotal, const Hosts& hosts);

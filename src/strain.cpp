@@ -2,6 +2,7 @@
 #include "param_manager.hpp"
 #include "utilities.hpp"
 #include <sstream>
+#include <algorithm>
 
 
 const Antigen GENOTYPE_MASK = init_genotype_mask();
@@ -35,6 +36,15 @@ std::string strain_phenotype_str(const Strain& strain)
     for (const Antigen antigen : strain)
         oss << get_phenotype_id(antigen) << " ";
     return oss.str();
+}
+
+std::string strain_phenotype_str_ordered(const Strain& strain)
+{
+    //sort strain
+    Strain orderedStrain = strain;
+    std::sort(orderedStrain.begin(), orderedStrain.end());
+
+    return strain_phenotype_str(orderedStrain);
 }
 
 //Returns a random antigen from the whole of genotypic / antigenic space.

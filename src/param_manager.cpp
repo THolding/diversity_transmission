@@ -42,6 +42,7 @@ ParamManager::ParamManager()
     ////Output management
     paramsBool["output_antigen_frequency"] = false; //Outputs the frequency with which antigens are present in the parasite population.
     paramsBool["output_parasite_adaptedness"] = false; //Outputs a measure of how well the parasite population is adapted to the current host immunity
+    paramsBool["output_strain_structure"] = false; //Output a list of all strain vector frequencies each output interval (uses multiple files).
     //paramsBool["output_shannon_entropy"] = true; //Outputs shannon entropy.
 
     ////Dynamic support parameters.

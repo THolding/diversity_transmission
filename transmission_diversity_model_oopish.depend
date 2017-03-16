@@ -1044,7 +1044,7 @@
 1485169638 /home/rr/Dropbox/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_main/src/infection.hpp
 	"strain.hpp"
 
-1483710746 /home/rr/Dropbox/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_main/src/strain.hpp
+1489590764 /home/rr/Dropbox/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_main/src/strain.hpp
 	<vector>
 	"global_typedefs.hpp"
 
@@ -1109,7 +1109,7 @@
 	"output.hpp"
 	"mosquito_manager.hpp"
 
-1488368183 /home/rr/Dropbox/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_main/src/output.hpp
+1489584001 /home/rr/Dropbox/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_main/src/output.hpp
 	"host.hpp"
 	"mosquito.hpp"
 
@@ -1134,11 +1134,12 @@
 	"mosquito_manager.hpp"
 	"utilities.hpp"
 
-1485254240 source:/home/rr/Dropbox/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_main/src/strain.cpp
+1489661368 source:/home/rr/Dropbox/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_main/src/strain.cpp
 	"strain.hpp"
 	"param_manager.hpp"
 	"utilities.hpp"
 	<sstream>
+	<algorithm>
 
 1484222434 source:/home/rr/Dropbox/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_main/src/testing.cpp
 	"testing.hpp"
@@ -1160,7 +1161,7 @@
 	<cmath>
 	<stdexcept>
 
-1488288666 source:/home/rr/Dropbox/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_main/src/param_manager.cpp
+1489579690 source:/home/rr/Dropbox/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_main/src/param_manager.cpp
 	"param_manager.hpp"
 	"mosquito.hpp"
 	"utilities.hpp"
@@ -1169,12 +1170,16 @@
 	<limits>
 	<algorithm>
 	<iostream>
+	<omp.h>
 
-1488384492 source:/home/rr/Dropbox/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_main/src/output.cpp
+1489660639 source:/home/rr/Dropbox/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_main/src/output.cpp
 	"output.hpp"
 	"model_driver.hpp"
 	"strain.hpp"
 	"utilities.hpp"
 	<cmath>
+	<sstream>
 	<unordered_map>
+	<sys/stat.h>
+	<sys/types.h>
 

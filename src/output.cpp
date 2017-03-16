@@ -3,12 +3,16 @@
 #include "strain.hpp"
 #include "utilities.hpp"
 #include <cmath>
+#include <sstream>
 #include <unordered_map>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 
 void Output::preinitialise_output_storage()
 {
     curNumInfectiousBites = 0;
+    cumulativeOutputCount = 0;
     lastUpdateTime = -1;
 
     //unsigned int sizeNeeded = (numTimeSteps / outputInterval)+1; //+1 for initial conditions
@@ -48,7 +52,10 @@ void Output::append_output(const unsigned int timestep, const Hosts& hosts, cons
     calc_time_dependent_metrics(timestep);
     calc_dyn_metrics();
 
+    process_strain_structure_output(hosts, mosquitoes);
+
     lastUpdateTime = timestep;
+    ++cumulativeOutputCount;
 }
 
 void Output::export_output(const std::string runName, const std::string filePath)
@@ -259,15 +266,57 @@ float Output::calc_parasite_adaptedness(const std::vector<unsigned int> curAntig
     return parasiteAdaptedness;
 }
 
+//TODO: remove antigenFreqs, and calculate it (if neccessary - we can probably just assume 0 if antigenCounter.find(a) == antigenCounter.end() - recal the vector once at the end).
 void Output::count_individual_antigens(std::vector<unsigned int>& antigenFreqs, std::unordered_map<Antigen, unsigned int>& antigenCounter, const Strain& strain)
 {
     for (const Antigen& antigen : strain)
     {
         //if (ParamManager::instance().get_bool("output_antigen_frequency"))
         antigenFreqs[get_phenotype_id(antigen)] += 1;
-        if (antigenCounter.find(get_phenotype_id(antigen)) == antigenCounter.end()) //if antigen type hasn't already been counted...
-            antigenCounter[get_phenotype_id(antigen)] = 1;
+
+        //if antigen type hasn't already been counted... No need to increment because we're just marking whether or not it exists
+        antigenCounter[get_phenotype_id(antigen)] = 1;
     }
 }
 
+//Counts and outputs the frequency of strain repertoires.
+void Output::process_strain_structure_output(const Hosts& hosts, const Mosquitoes& mosquitoes)
+{
+    if (ParamManager::instance().get_bool("output_strain_structure") == false)
+        return;
+
+    std::unordered_map<std::string, unsigned int> strainFrequencies;
+
+    //Need to count strains in host and mosquito infections
+    for (unsigned int iH=0; iH<hosts.size(); ++iH)
+    {
+        if (hosts[iH].infection1.infected)
+            strainFrequencies[strain_phenotype_str_ordered(hosts[iH].infection1.strain)] += 1;
+
+        if (hosts[iH].infection2.infected)
+            strainFrequencies[strain_phenotype_str_ordered(hosts[iH].infection2.strain)] += 1;
+    }
+
+    for (unsigned int iM=0; iM<mosquitoes.size(); ++iM)
+    {
+        if (mosquitoes[iM].is_active() && mosquitoes[iM].infection.infected)
+            strainFrequencies[strain_phenotype_str_ordered(mosquitoes[iM].infection.strain)] += 1;
+    }
+
+    //Output to file
+    int status = mkdir("strain_structure", 0755); //https://linux.die.net/man/2/mkdir
+
+    //create file name
+    std::ostringstream outputFilename;
+    outputFilename << ParamManager::instance().file_path() << "strain_structure/" << ParamManager::instance().run_name() << "_strain_structure" << cumulativeOutputCount << ".csv";
+
+
+    std::ofstream file;
+    file.open(outputFilename.str(), std::ofstream::out | std::ofstream::trunc);
+    for (auto entry : strainFrequencies)
+        file << entry.first << ", " << entry.second << "\n";
+
+    file.flush();
+    file.close();
+}
 
