@@ -31,6 +31,9 @@ void Output::preinitialise_output_storage()
     if (ParamManager::instance().get_bool("output_antigen_frequency"))
         antigenFrequency.reserve(sizeNeeded);
 
+    if (ParamManager::instance().get_bool("output_host_susceptibility"))
+        hostSusceptibility.reserve(sizeNeeded);
+
     if (ParamManager::instance().get_bool("output_parasite_adaptedness"))
         parasiteAdaptedness.reserve(sizeNeeded);
 
@@ -71,6 +74,9 @@ void Output::export_output(const std::string runName, const std::string filePath
 
     if (ParamManager::instance().get_bool("output_antigen_frequency"))
         utilities::matrixToFile(antigenFrequency, filePath+runName+"_circulating_antigen_frequency.csv", ", ");
+
+    if (ParamManager::instance().get_bool("output_host_susceptibility"))
+        utilities::arrayToFile(hostSusceptibility, filePath+runName+"_host_susceptibility.csv");
 
     if (ParamManager::instance().get_bool("output_parasite_adaptedness"))
         utilities::arrayToFile(parasiteAdaptedness, filePath+runName+"_parasite_adaptedness.csv");
@@ -181,18 +187,18 @@ void Output::calc_host_mosquito_dependent_metrics(const Hosts& hosts, const Mosq
     std::vector<unsigned int> curAntigenFrequencies;
     curAntigenFrequencies = std::vector<unsigned int>(ParamManager::instance().get_int("num_phenotypes"));
 
-    std::unordered_map<Antigen, unsigned int> antigenCounter;
+    unsigned int uniqueAntigenCount = 0;
 
     //All host infections
     unsigned int antigenTotal = 0;
     for (const Host& host : hosts)
     {
         if (host.infection1.infected) {
-            count_individual_antigens(curAntigenFrequencies, antigenCounter, host.infection1.strain);
+            count_individual_antigens(curAntigenFrequencies, uniqueAntigenCount, host.infection1.strain);
             antigenTotal += ParamManager::instance().get_int("repertoire_size");
         }
         if (host.infection2.infected) {
-            count_individual_antigens(curAntigenFrequencies, antigenCounter, host.infection2.strain);
+            count_individual_antigens(curAntigenFrequencies, uniqueAntigenCount, host.infection2.strain);
             antigenTotal += ParamManager::instance().get_int("repertoire_size");
         }
     }
@@ -202,11 +208,12 @@ void Output::calc_host_mosquito_dependent_metrics(const Hosts& hosts, const Mosq
     for (const Mosquito& mosquito : mosquitoes)
     {
         if (mosquito.is_active() && mosquito.infection.infected)
-            count_individual_antigens(curAntigenFrequencies, antigenCounter, mosquito.infection.strain);
+            count_individual_antigens(curAntigenFrequencies, uniqueAntigenCount, mosquito.infection.strain);
     }
 
     //Use frequency to calculate some outputs
-    proportionCirculatingAntigens.push_back(((float)antigenCounter.size()) / ((float)ParamManager::instance().get_int("num_phenotypes")));
+    //std::cout << uniqueAntigenCount << ", " << ((float)uniqueAntigenCount) / ((float)ParamManager::instance().get_int("num_phenotypes")) << "\n";
+    proportionCirculatingAntigens.push_back(((float)uniqueAntigenCount) / ((float)ParamManager::instance().get_int("num_phenotypes")));
     shannonEntropy.push_back(Output::calc_shannon_entropy(curAntigenFrequencies, antigenTotal));
 
     //Calculate parasite adaptability
@@ -218,8 +225,19 @@ void Output::calc_host_mosquito_dependent_metrics(const Hosts& hosts, const Mosq
         antigenFrequency.push_back(curAntigenFrequencies);
 
     //No need to calculate antigen proportions from antigen frequencies?
-    //for (unsigned int i=0; i<curAntigenFrequencies.size(); ++i)
-    //    curAntigenFrequencies[i] = (float) curAntigenFrequencies[i] / (float) antigenTotal;
+    if (ParamManager::instance().get_bool("output_host_susceptibility"))
+    {
+        std::vector<float> curAntigenProportions;
+        if (antigenTotal > 0) //Move this logic to output::calc_host_susceptibility()
+        {
+            curAntigenFrequencies.reserve(curAntigenFrequencies.size());
+            for (unsigned int i=0; i<curAntigenFrequencies.size(); ++i)
+                curAntigenProportions.push_back((float) curAntigenFrequencies[i] / (float) antigenTotal);
+            hostSusceptibility.push_back(calc_host_susceptibility(curAntigenProportions, hosts));
+        }
+        else
+            hostSusceptibility.push_back(0.0);
+    }
 }
 
 float Output::calc_shannon_entropy(const std::vector<unsigned int>& curAntigenFrequency, const unsigned int totalAntigens)//const std::unordered_map<Antigen, const unsigned int>& curAntigenFrequency)
@@ -242,7 +260,26 @@ float Output::calc_shannon_entropy(const std::vector<unsigned int>& curAntigenFr
     return entropy;
 }
 
-float Output::calc_parasite_adaptedness(const std::vector<unsigned int> curAntigenFrequencies, const unsigned int antigenTotal, const Hosts& hosts)
+//Measure of how susceptible the host population is (ranges between 0 and 1). I.e. take away from 1 to give host adaptedness.
+float Output::calc_host_susceptibility(const std::vector<float>& curAntigenProportions, const Hosts& hosts)
+{
+    float totalSusceptibility = 0.0;
+    for (const Host &host : hosts)
+    {
+        float hostSusceptibility = 0.0;
+        for (unsigned int i=0; i<curAntigenProportions.size(); ++i)
+            hostSusceptibility += curAntigenProportions[i] * (1.0 - host.immuneState[i]);
+        totalSusceptibility += hostSusceptibility;
+    }
+
+    totalSusceptibility = totalSusceptibility / (float)hosts.size();
+    //std::cout << "totalSusceptibility: " << totalSusceptibility << "\n";
+    return totalSusceptibility;
+}
+
+
+//Measure of how well the parasite population is adapted to host immunity (converse of host susceptibility).
+float Output::calc_parasite_adaptedness(const std::vector<unsigned int>& curAntigenFrequencies, const unsigned int antigenTotal, const Hosts& hosts)
 {
     if (antigenTotal == 0)
         return 0;
@@ -262,20 +299,23 @@ float Output::calc_parasite_adaptedness(const std::vector<unsigned int> curAntig
     for (unsigned int a=0; a<ParamManager::instance().get_int("num_phenotypes"); ++a)
         parasiteAdaptedness += (curAntigenFrequencies[a] / (float) antigenTotal) * susceptibility[a];
 
-    std::cout << "Parasite adaptedness = " << parasiteAdaptedness << "\n";
+    //std::cout << "Parasite adaptedness = " << parasiteAdaptedness << "\n";
     return parasiteAdaptedness;
 }
 
 //TODO: remove antigenFreqs, and calculate it (if neccessary - we can probably just assume 0 if antigenCounter.find(a) == antigenCounter.end() - recal the vector once at the end).
-void Output::count_individual_antigens(std::vector<unsigned int>& antigenFreqs, std::unordered_map<Antigen, unsigned int>& antigenCounter, const Strain& strain)
+void Output::count_individual_antigens(std::vector<unsigned int>& antigenFreqs, unsigned int& antigenCounter, const Strain& strain)
 {
     for (const Antigen& antigen : strain)
     {
+        //if antigen type hasn't already been counted... No need to increment because we're just marking whether or not it exists
+        if (antigenFreqs[get_phenotype_id(antigen)] == 0)
+            ++antigenCounter;
+        //if (antigenFreqs[antigen] == 0)
+        //    ++antigenCounter;
+
         //if (ParamManager::instance().get_bool("output_antigen_frequency"))
         antigenFreqs[get_phenotype_id(antigen)] += 1;
-
-        //if antigen type hasn't already been counted... No need to increment because we're just marking whether or not it exists
-        antigenCounter[get_phenotype_id(antigen)] = 1;
     }
 }
 

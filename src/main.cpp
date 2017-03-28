@@ -24,6 +24,9 @@ int main(int argc, char* argv[])
     parse_parameters_from_cmd(argc, argv, model); //Throws exception if fails.
     ParamManager::instance().recalculate_derived_parameters();
 
+    //ParamManager::instance().set_bool("output_host_susceptibility", true);
+    //ParamManager::instance().set_bool("unique_initial_strains", true);
+    //ParamManager::instance().set_int("initial_num_strains", 1);
 
     //ParamManager::instance().set_int("run_time", 5000);
     //ParamManager::instance().set_int("burn_in_period", 5000);

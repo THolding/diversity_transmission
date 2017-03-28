@@ -25,6 +25,10 @@ private:
     void update_mosquito_infections();
     void feed_mosquitoes();
     void update_parameters(const unsigned int time);
+
+    void create_random_initial_strains(std::vector<Strain>& _initialStrainPool);
+    void create_unique_initial_strains(std::vector<Strain>& _initialStrainPool);
+
 public:
     ModelDriver() : output(Output(this)) {  }
     void initialise_model();

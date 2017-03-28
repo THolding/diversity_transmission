@@ -15,6 +15,7 @@ ParamManager::ParamManager()
     std::cout << "Initialised ParamManager singleton instance.\n";
 
     paramsBool["verbose"] = false;
+    paramsBool["unique_initial_strains"] = false;
     paramsInt["run_time"] = 10000;//50000;
     paramsInt["output_interval"] = 250;//250;
     paramsInt["burn_in_period"] = 3000;//3000;
@@ -41,6 +42,7 @@ ParamManager::ParamManager()
 
     ////Output management
     paramsBool["output_antigen_frequency"] = false; //Outputs the frequency with which antigens are present in the parasite population.
+    paramsBool["output_host_susceptibility"] = false; //Outputs a number (ranging between 0 and 1) indicating the mean susceptibility of the host popualtion to currently circulating parasite population.
     paramsBool["output_parasite_adaptedness"] = false; //Outputs a measure of how well the parasite population is adapted to the current host immunity
     paramsBool["output_strain_structure"] = false; //Output a list of all strain vector frequencies each output interval (uses multiple files).
     //paramsBool["output_shannon_entropy"] = true; //Outputs shannon entropy.
