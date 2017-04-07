@@ -4,6 +4,7 @@
 #include "utilities.hpp"
 #include <cmath>
 #include <sstream>
+#include <numeric>
 #include <unordered_map>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -207,8 +208,10 @@ void Output::calc_host_mosquito_dependent_metrics(const Hosts& hosts, const Mosq
     //All mosquito infections
     for (const Mosquito& mosquito : mosquitoes)
     {
-        if (mosquito.is_active() && mosquito.infection.infected)
+        if (mosquito.is_active() && mosquito.infection.infected) {
             count_individual_antigens(curAntigenFrequencies, uniqueAntigenCount, mosquito.infection.strain);
+            antigenTotal += 60;
+        }
     }
 
     //Use frequency to calculate some outputs
@@ -269,35 +272,22 @@ float Output::calc_host_susceptibility(const std::vector<unsigned int>& curAntig
         for (unsigned int h=0; h<hosts.size(); ++h)
             immunity[a] += 1.0 - hosts[h].immuneState[a];
         immunity[a] = immunity[a] / (float)hosts.size();
+        //if (immunity[a] > 1.0)
+        //    std::cout << "WARNING: immunity[a] = " << immunity[a] << "\n";
     }
+
 
     //Calculate host susceptibility
     float hostSusceptibility = 0.0f;
-    for (unsigned int a=0; a<ParamManager::instance().get_int("num_phenotypes"); ++a)
-        hostSusceptibility += (curAntigenFrequencies[a] / (float) antigenTotal) * immunity[a];
+    for (unsigned int a=0; a<ParamManager::instance().get_int("num_phenotypes"); ++a) {
+        if (((float)curAntigenFrequencies[a] / (float) antigenTotal) > 1.0)
+            std::cout << "WARNING: p(a) = " << ((float)curAntigenFrequencies[a] / (float) antigenTotal) << "\n";
+        hostSusceptibility += ((float)curAntigenFrequencies[a] / (float) antigenTotal) * immunity[a];
+    }
 
     std::cout << "Host susceptibility = " << hostSusceptibility << "\n";
     return hostSusceptibility;
-
-    /*float totalSusceptibility = 0.0;
-    for (const Host &host : hosts)
-    {
-        float hostSusceptibility = 0.0;
-        for (unsigned int i=0; i<curAntigenProportions.size(); ++i)
-            hostSusceptibility += curAntigenProportions[i] * (1.0 - host.immuneState[i]);
-        totalSusceptibility += hostSusceptibility;
-    }
-
-    totalSusceptibility = totalSusceptibility / (float)hosts.size();
-    //std::cout << "totalSusceptibility: " << totalSusceptibility << "\n";
-    return totalSusceptibility;*/
 }
-
-/*float Output::calc_host_susceptibility(const std::vector<unsigned int>& curAntigenFrequencies, const unsigned int antigenTotal, const Hosts& hosts)
-{
-
-}*/
-
 
 //Measure of how well the parasite population is adapted to host immunity (converse of host susceptibility).
 float Output::calc_parasite_adaptedness(const std::vector<unsigned int>& curAntigenFrequencies, const unsigned int antigenTotal, const Hosts& hosts)
