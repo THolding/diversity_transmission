@@ -34,8 +34,8 @@ void Output::preinitialise_output_storage()
     if (ParamManager::instance().get_bool("output_host_susceptibility"))
         hostSusceptibility.reserve(sizeNeeded);
 
-    if (ParamManager::instance().get_bool("output_parasite_adaptedness"))
-        parasiteAdaptedness.reserve(sizeNeeded);
+//    if (ParamManager::instance().get_bool("output_parasite_adaptedness"))
+//        parasiteAdaptedness.reserve(sizeNeeded);
 
     if (ParamManager::instance().get_bool("dyn_num_mosquitoes"))
         numMosquitoesList.reserve(sizeNeeded);
@@ -78,8 +78,8 @@ void Output::export_output(const std::string runName, const std::string filePath
     if (ParamManager::instance().get_bool("output_host_susceptibility"))
         utilities::arrayToFile(hostSusceptibility, filePath+runName+"_host_susceptibility.csv");
 
-    if (ParamManager::instance().get_bool("output_parasite_adaptedness"))
-        utilities::arrayToFile(parasiteAdaptedness, filePath+runName+"_parasite_adaptedness.csv");
+//    if (ParamManager::instance().get_bool("output_parasite_adaptedness"))
+//        utilities::arrayToFile(parasiteAdaptedness, filePath+runName+"_parasite_adaptedness.csv");
 
     if (ParamManager::instance().get_bool("dyn_num_mosquitoes"))
         utilities::arrayToFile(numMosquitoesList, filePath+runName+"_num_mosquitoes.csv");
@@ -217,8 +217,8 @@ void Output::calc_host_mosquito_dependent_metrics(const Hosts& hosts, const Mosq
     shannonEntropy.push_back(Output::calc_shannon_entropy(curAntigenFrequencies, antigenTotal));
 
     //Calculate parasite adaptability
-    if (ParamManager::instance().get_bool("output_parasite_adaptedness"))// && ParamManager::instance().get_bool("output_antigen_frequency"))
-        parasiteAdaptedness.push_back(calc_parasite_adaptedness(curAntigenFrequencies, antigenTotal, hosts));
+//    if (ParamManager::instance().get_bool("output_parasite_adaptedness"))// && ParamManager::instance().get_bool("output_antigen_frequency"))
+//        parasiteAdaptedness.push_back(calc_parasite_adaptedness(curAntigenFrequencies, antigenTotal, hosts));
 
     //Calculate antigen proportions by normalising by total
     if (ParamManager::instance().get_bool("output_antigen_frequency")) //Turns out we need to do this for shannon entropy anyway!
@@ -227,16 +227,11 @@ void Output::calc_host_mosquito_dependent_metrics(const Hosts& hosts, const Mosq
     //No need to calculate antigen proportions from antigen frequencies?
     if (ParamManager::instance().get_bool("output_host_susceptibility"))
     {
-        std::vector<float> curAntigenProportions;
-        if (antigenTotal > 0) //Move this logic to output::calc_host_susceptibility()
-        {
-            curAntigenFrequencies.reserve(curAntigenFrequencies.size());
-            for (unsigned int i=0; i<curAntigenFrequencies.size(); ++i)
-                curAntigenProportions.push_back((float) curAntigenFrequencies[i] / (float) antigenTotal);
-            hostSusceptibility.push_back(calc_host_susceptibility(curAntigenProportions, hosts));
-        }
-        else
-            hostSusceptibility.push_back(0.0);
+        //std::vector<float> curAntigenProportions;
+        //curAntigenProportions.reserve(curAntigenFrequencies.size());
+        //for (unsigned int i=0; i<curAntigenFrequencies.size(); ++i)
+        //    curAntigenProportions.push_back((float) curAntigenFrequencies[i] / (float) antigenTotal);
+        hostSusceptibility.push_back(calc_host_susceptibility(curAntigenFrequencies, antigenTotal, hosts));
     }
 }
 
@@ -261,9 +256,30 @@ float Output::calc_shannon_entropy(const std::vector<unsigned int>& curAntigenFr
 }
 
 //Measure of how susceptible the host population is (ranges between 0 and 1). I.e. take away from 1 to give host adaptedness.
-float Output::calc_host_susceptibility(const std::vector<float>& curAntigenProportions, const Hosts& hosts)
+float Output::calc_host_susceptibility(const std::vector<unsigned int>& curAntigenFrequencies, const unsigned int antigenTotal, const Hosts& hosts)
 {
-    float totalSusceptibility = 0.0;
+    if (antigenTotal == 0)
+        return 0;
+
+    //Calculate immunity to each antigen
+    std::vector<float> immunity;
+    for (unsigned int a=0; a<ParamManager::instance().get_int("num_phenotypes"); ++a)
+    {
+        immunity.push_back(0.0);
+        for (unsigned int h=0; h<hosts.size(); ++h)
+            immunity[a] += 1.0 - hosts[h].immuneState[a];
+        immunity[a] = immunity[a] / (float)hosts.size();
+    }
+
+    //Calculate host susceptibility
+    float hostSusceptibility = 0.0f;
+    for (unsigned int a=0; a<ParamManager::instance().get_int("num_phenotypes"); ++a)
+        hostSusceptibility += (curAntigenFrequencies[a] / (float) antigenTotal) * immunity[a];
+
+    std::cout << "Host susceptibility = " << hostSusceptibility << "\n";
+    return hostSusceptibility;
+
+    /*float totalSusceptibility = 0.0;
     for (const Host &host : hosts)
     {
         float hostSusceptibility = 0.0;
@@ -274,8 +290,13 @@ float Output::calc_host_susceptibility(const std::vector<float>& curAntigenPropo
 
     totalSusceptibility = totalSusceptibility / (float)hosts.size();
     //std::cout << "totalSusceptibility: " << totalSusceptibility << "\n";
-    return totalSusceptibility;
+    return totalSusceptibility;*/
 }
+
+/*float Output::calc_host_susceptibility(const std::vector<unsigned int>& curAntigenFrequencies, const unsigned int antigenTotal, const Hosts& hosts)
+{
+
+}*/
 
 
 //Measure of how well the parasite population is adapted to host immunity (converse of host susceptibility).

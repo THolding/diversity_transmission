@@ -28,7 +28,7 @@ private:
 
     //Optional output
     std::vector<float> hostSusceptibility; //Outputs a number (ranging between 0 and 1) indicating the mean susceptibility of the host popualtion to currently circulating parasite population.
-    std::vector<float> parasiteAdaptedness; //Measure of how adapted the parasite population is to the current host immunity
+    //std::vector<float> parasiteAdaptedness; //Measure of how adapted the parasite population is to the current host immunity
     std::vector<std::vector<unsigned int>> antigenFrequency; //frequency of each antigen type, at each output time interval
 
     //Dynamic parameters
@@ -46,7 +46,7 @@ private:
     void process_strain_structure_output(const Hosts& hosts, const Mosquitoes& mosquitoes);
 
     void count_individual_antigens(std::vector<unsigned int>& antigenFreqs, unsigned int& antigenCounter, const Strain& strain);
-    float calc_host_susceptibility(const std::vector<float>& curAntigenProportions, const Hosts& hosts);
+    float calc_host_susceptibility(const std::vector<unsigned int>& curAntigenFrequencies, const unsigned int totalAntigens, const Hosts& hosts);
     float calc_parasite_adaptedness(const std::vector<unsigned int>& curAntigenFrequencies, const unsigned int antigenTotal, const Hosts& hosts);
     static float calc_shannon_entropy(const std::vector<unsigned int>& curAntigenFrequency, const unsigned int totalAntigens);
     //float calc_shannon_entropy(const std::unordered_map<Antigen, unsigned int>& diversityPool);

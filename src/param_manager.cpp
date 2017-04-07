@@ -43,7 +43,7 @@ ParamManager::ParamManager()
     ////Output management
     paramsBool["output_antigen_frequency"] = false; //Outputs the frequency with which antigens are present in the parasite population.
     paramsBool["output_host_susceptibility"] = false; //Outputs a number (ranging between 0 and 1) indicating the mean susceptibility of the host popualtion to currently circulating parasite population.
-    paramsBool["output_parasite_adaptedness"] = false; //Outputs a measure of how well the parasite population is adapted to the current host immunity
+    //paramsBool["output_parasite_adaptedness"] = false; //Outputs a measure of how well the parasite population is adapted to the current host immunity
     paramsBool["output_strain_structure"] = false; //Output a list of all strain vector frequencies each output interval (uses multiple files).
     //paramsBool["output_shannon_entropy"] = true; //Outputs shannon entropy.
 
@@ -198,7 +198,7 @@ void ParamManager::set_param(const std::string name, const std::string value)
         set_file_path(value);
     else
     {
-        throw std::runtime_error("ParamManager::set_param cannot create a new parameter with name " + name + ". You can only set values for pre-existing parameters.");
+        throw std::runtime_error("ParamManager::set_param cannot create a new parameter with name '" + name + "'. You can only set values for pre-existing parameters.");
     }
 }
 
