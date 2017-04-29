@@ -48,7 +48,7 @@ void exposure_kernal(const Strain& strain, ImmuneState& immuneState)
         unsigned int curAntigen = utilities::wrap((int)targetAntigenID-tailSize, 0, ParamManager::num_phenotypes);
         while (itr != immunityMask.end())
         {
-            immuneState[curAntigen] += (*itr);
+            immuneState[curAntigen] += ParamManager::immunityScale*(*itr);
             if (immuneState[curAntigen] > 1.0)
                 immuneState[curAntigen] = 1.0;
 

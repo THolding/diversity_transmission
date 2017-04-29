@@ -38,6 +38,7 @@ float ParamManager::recombination_scale = 50.0f;
 float ParamManager::infection_duration_scale = 2.0f;
 float ParamManager::infectivity_scale = 0.5f;
 float ParamManager::cross_immunity = 0.0f;
+float ParamManager::immunityScale = 1.0f;
 
 ////Output management
 bool ParamManager::output_antigen_frequency = false; //Outputs the frequency with which antigens are present in the parasite population.
@@ -211,6 +212,8 @@ void ParamManager::set_param(const std::string name, const std::string value)
         infectivity_scale = std::stof(value);
     else if (name == "cross_immunity")
         cross_immunity = std::stof(value);
+    else if (name == "immunity_scale")
+        immunityScale = std::stof(value);
 
     else if (name == "output_antigen_frequency")
         output_antigen_frequency = (value == "true" || value == "1" || value == "True" || value == "TRUE");

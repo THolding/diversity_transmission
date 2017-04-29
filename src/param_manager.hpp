@@ -42,6 +42,7 @@ public:
     static float infection_duration_scale;
     static float infectivity_scale;
     static float cross_immunity;
+    static float immunityScale; //Linear scaling of immunity.
 
     ////Output management
     static bool output_antigen_frequency; //Outputs the frequency with which antigens are present in the parasite population.
