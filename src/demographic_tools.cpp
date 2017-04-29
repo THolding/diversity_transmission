@@ -9,7 +9,7 @@ PTABLE generate_host_ptable()
     float lambda = -0.0000015;
     for (unsigned int age=0; age<pDeath.size(); ++age)
         pDeath[age] = std::exp(-((float)age*lambda)) - 1.0;
-    utilities::arrayToFile(pDeath, ParamManager::instance().file_path()+ParamManager::instance().run_name()+"_host_pdeath.csv");
+    utilities::arrayToFile(pDeath, ParamManager::file_path()+ParamManager::run_name()+"_host_pdeath.csv");
     return pDeath;
 }
 
@@ -17,8 +17,8 @@ PTABLE generate_mosquito_ptable()
 {
     PTABLE pDeath;
     for (unsigned int age=0; age<pDeath.size(); ++age)
-        pDeath[age] = 0.25 / (1.0+std::exp(-(0.5*((float)age - (float)ParamManager::instance().get_int("mean_mosquito_life_expectancy")))));
-    utilities::arrayToFile(pDeath, ParamManager::instance().file_path()+ParamManager::instance().run_name()+"_mosquito_pdeath.csv");
+        pDeath[age] = 0.25 / (1.0+std::exp(-(0.5*((float)age - (float)ParamManager::mean_mosquito_life_expectancy))));
+    utilities::arrayToFile(pDeath, ParamManager::file_path()+ParamManager::run_name()+"_mosquito_pdeath.csv");
     return pDeath;
 }
 
@@ -29,7 +29,7 @@ PTABLE calculate_host_cdf(const PTABLE& pDeath)
     cdf[0] = std::pow(1.0-pDeath[0], 365);
     for (unsigned int i=1; i<pDeath.size(); ++i)
         cdf[i] = cdf[i-1] *= std::pow(((1.0 - pDeath[i])), 365);
-    utilities::arrayToFile(cdf, ParamManager::instance().file_path()+ParamManager::instance().run_name()+"_host_cdf.csv");
+    utilities::arrayToFile(cdf, ParamManager::file_path()+ParamManager::run_name()+"_host_cdf.csv");
     return cdf;
 }
 
@@ -40,7 +40,7 @@ PTABLE calculate_mosquito_cdf(const PTABLE& pDeath)
     cdf[0] = 1.0-pDeath[0];
     for (unsigned int i=1; i<pDeath.size(); ++i)
         cdf[i] = (cdf[i-1] *= (1.0 - pDeath[i]));
-    utilities::arrayToFile(cdf, ParamManager::instance().file_path()+ParamManager::instance().run_name()+"_mosquito_cdf.csv");
+    utilities::arrayToFile(cdf, ParamManager::file_path()+ParamManager::run_name()+"_mosquito_cdf.csv");
     return cdf;
 }
 

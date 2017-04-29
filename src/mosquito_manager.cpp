@@ -5,8 +5,8 @@ void MosquitoManager::initialise(std::vector<Mosquito>* mosquitoesArray)
 {
     numMosquitoes = 0;
     mosquitoes = mosquitoesArray;
-    activeMosquitoes.reserve(ParamManager::instance().get_int("max_num_mosquitoes"));
-    inactiveMosquitoes.reserve(ParamManager::instance().get_int("max_num_mosquitoes"));
+    activeMosquitoes.reserve(ParamManager::max_num_mosquitoes);
+    inactiveMosquitoes.reserve(ParamManager::max_num_mosquitoes);
     for (unsigned int i=0; i<mosquitoes->size(); ++i)
     {
         if (mosquitoes->at(i).is_active())

@@ -25,6 +25,8 @@ private:
     std::vector<float> proportionCirculatingAntigens; //Proportion of antigen space represented by the antigens in circulation.
     std::vector<float> shannonEntropy; //shannon entropy of antigens in circulation
     std::vector<float> absoluteImmunity; //Total number of antigens to which
+    std::vector<float> antigenGenerationRate; //Rate of new antigen generation (per day)
+    std::vector<float> antigenLossRate; //Rate of antigen loss (per day)
 
     //Optional output
     std::vector<float> hostSusceptibility; //Outputs a number (ranging between 0 and 1) indicating the mean susceptibility of the host popualtion to currently circulating parasite population.
@@ -59,7 +61,7 @@ public:
     Output(ModelDriver* _model) : model(_model) {  }
     void preinitialise_output_storage();
     void append_output(const unsigned int timestep, const Hosts& hosts, const Mosquitoes& mosquitoes);
-    void export_output(const std::string runName=ParamManager::instance().run_name(), const std::string filePath=ParamManager::instance().file_path());
+    void export_output(const std::string runName=ParamManager::run_name(), const std::string filePath=ParamManager::file_path());
     void register_infectious_bite();
 };
 

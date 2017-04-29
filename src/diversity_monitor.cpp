@@ -14,7 +14,7 @@ void DiversityMonitor::reset()
     instance().uniqueAntigens = 0;
     instance().numExtinctions = 0;
     instance().numNewlyGenerated = 0;
-    instance().antigenCounts = std::vector<unsigned int> (ParamManager::instance().get_int("num_phenotypes"), 0);
+    instance().antigenCounts = std::vector<unsigned int> (ParamManager::num_phenotypes , 0);
 }
 
 void DiversityMonitor::register_antigen_gain(Antigen phenotypeID)

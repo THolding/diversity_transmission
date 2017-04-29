@@ -6,10 +6,10 @@
 MosquitoPopulationAdaptor::MosquitoPopulationAdaptor(unsigned int tStart, unsigned int tStop, unsigned int targetPopulation, MosquitoManager* mManager)
     : tStart(tStart), tStop(tStop), adaptorName("MosquitoPopulationAdaptor"), targetPopulation(targetPopulation), mManager(mManager)
 {
-    ParamManager::instance().set_bool("dyn_num_mosquitoes", true);
+    ParamManager::dyn_num_mosquitoes = true;
 
-    if (targetPopulation > ParamManager::instance().get_int("max_num_mosquitoes"))
-        ParamManager::instance().set_int("max_num_mosquitoes", targetPopulation);
+    if (targetPopulation > ParamManager::max_num_mosquitoes)
+        ParamManager::max_num_mosquitoes = targetPopulation;
 }
 
 
@@ -32,3 +32,5 @@ void MosquitoPopulationAdaptor::update(unsigned int time)
         mManager->modify_population(integerToChange); //Modify mosquito population.
     }
 }
+
+

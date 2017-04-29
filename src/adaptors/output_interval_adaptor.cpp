@@ -6,19 +6,19 @@
 OutputIntervalAdaptor::OutputIntervalAdaptor(unsigned int tStart, unsigned int tStop, unsigned int targetValue)
     : tStart(tStart), tStop(tStop), adaptorName("OutputIntervalAdaptor"), targetValue(targetValue)
 {
-    baseValue = ParamManager::instance().get_int("output_interval");
-    ParamManager::instance().recalculate_output_array_size_needed();
+    baseValue = ParamManager::output_interval;
+    ParamManager::recalculate_output_array_size_needed();
 }
 
 void OutputIntervalAdaptor::update(unsigned int time)
 {
     if (time == tStart)
     {
-        ParamManager::instance().set_int("output_interval", targetValue);
+        ParamManager::output_interval = targetValue;
     }
 
     if (time == tStop)
     {
-        ParamManager::instance().set_int("output_interval", baseValue);
+        ParamManager::output_interval = baseValue;
     }
 }

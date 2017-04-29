@@ -1,6 +1,7 @@
 #include "mosquito.hpp"
 #include "output.hpp"
 #include "utilities.hpp"
+#include "diversity_monitor.hpp"
 #include <cmath>
 
 //Enacts infection event to a mosquito if possible. Assumes any probabilistic factors affecting infection chance have been accounted for and infection is still going ahead.
@@ -9,12 +10,16 @@ void Mosquito::infect(const Strain& strain, bool allowRecombination)
     if (infection.infected == false) //Can only be infected once.
     {
         infection.infected = true;
-        if (allowRecombination)
+        if (allowRecombination) {
             infection.strain = generate_recombinant_strain(strain);
-        else
+            DiversityMonitor::register_new_strain(infection.strain);
+        }
+        else {
             infection.strain = strain;
+            DiversityMonitor::register_new_strain(infection.strain);
+        }
         infection.infectivity = 1.0;
-        infection.durationRemaining = ParamManager::instance().get_int("mosquito_eip");
+        infection.durationRemaining = ParamManager::mosquito_eip;
     }
 }
 

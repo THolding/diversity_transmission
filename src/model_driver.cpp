@@ -22,8 +22,8 @@ void ModelDriver::initialise_model()
 
     //Initialise hosts
     std::cout << "initialising host demographics" << std::endl;
-    hosts.reserve(ParamManager::instance().get_int("num_hosts"));
-    for (unsigned int h=0; h<ParamManager::instance().get_int("num_hosts"); ++h)
+    hosts.reserve(ParamManager::num_hosts);
+    for (unsigned int h=0; h<ParamManager::num_hosts; ++h)
     {
         Host host;
         host.kill();
@@ -33,8 +33,8 @@ void ModelDriver::initialise_model()
 
     //Initialise mosquitoes
     std::cout << "initialising mosquito demographics" << std::endl;
-    mosquitoes.reserve(ParamManager::instance().get_int("max_num_mosquitoes"));
-    for (unsigned int m=0; m<ParamManager::instance().get_int("initial_num_mosquitoes"); ++m)
+    mosquitoes.reserve(ParamManager::max_num_mosquitoes);
+    for (unsigned int m=0; m<ParamManager::initial_num_mosquitoes; ++m)
     {
         Mosquito mosquito;
         mosquito.kill();
@@ -47,14 +47,14 @@ void ModelDriver::initialise_model()
 
     //Create initial pool of strains
     std::vector<Strain> initialStrainPool;
-    if (ParamManager::instance().get_bool("unique_initial_strains") == true)
+    if (ParamManager::unique_initial_strains == true)
         create_unique_initial_strains(initialStrainPool);
     else //randomly select initial strains and infections (default).
         create_random_initial_strains(initialStrainPool);
 
     //Initial infections (mosquitoes)
     std::cout << "initialising mosquito infections" << std::endl;
-    for (unsigned int i=0; i<ParamManager::instance().get_int("initial_num_mosquito_infections"); ++i)
+    for (unsigned int i=0; i<ParamManager::initial_num_mosquito_infections; ++i)
     {
         unsigned int iM = mManager.random_active_mos();
         mosquitoes[iM].infect(initialStrainPool[i % initialStrainPool.size()], false);
@@ -68,21 +68,21 @@ void ModelDriver::run_model()
 
     bool finished = false;
     unsigned int timeElapsed = 0;
-    unsigned int timeNextOutput = ParamManager::instance().get_int("output_interval");
-    unsigned int lastOutputInterval = ParamManager::instance().get_int("output_interval");
+    unsigned int timeNextOutput = ParamManager::output_interval;
+    unsigned int lastOutputInterval = ParamManager::output_interval;
     output.append_output(timeElapsed, hosts, mosquitoes);
-    burnInPeriod = ParamManager::instance().get_int("burn_in_period");
+    burnInPeriod = ParamManager::burn_in_period;
     while (!finished)
     {
         //Dynamic parameters
-        ParamManager::instance().update_adaptors(timeElapsed);
-        if (lastOutputInterval != ParamManager::instance().get_int("output_interval")) {
-            lastOutputInterval = ParamManager::instance().get_int("output_interval");
+        ParamManager::update_adaptors(timeElapsed);
+        if (lastOutputInterval != ParamManager::output_interval) {
+            lastOutputInterval = ParamManager::output_interval;
             timeNextOutput = timeElapsed;
         }
 
         //Update output times
-        if (ParamManager::instance().get_bool("verbose")) {
+        if (ParamManager::verbose) {
             std::cout << "t=" << timeElapsed << "\n";
             if (burnInPeriod > 0)
                 std::cout << "burnIn left: " << burnInPeriod << "\n";
@@ -117,7 +117,7 @@ void ModelDriver::run_model()
         //Update logging / data collection.
         if (timeElapsed == timeNextOutput)
         {
-            timeNextOutput = timeElapsed + ParamManager::instance().get_int("output_interval");
+            timeNextOutput = timeElapsed + ParamManager::output_interval;
             output.append_output(timeElapsed, hosts, mosquitoes);
         }
 
@@ -127,7 +127,7 @@ void ModelDriver::run_model()
             --burnInPeriod;
 
         ++timeElapsed;
-        if (timeElapsed > ParamManager::instance().get_int("run_time"))
+        if (timeElapsed > ParamManager::run_time)
             finished = true;
     }
 
@@ -194,9 +194,9 @@ void ModelDriver::feed_mosquitoes()
     {
         if (mosquitoes[i].is_active())
         {
-            float p = utilities::random_float01()*ParamManager::instance().get_cumulative_bite_frequency_distribution().back();
+            float p = utilities::random_float01()*ParamManager::get_cumulative_bite_frequency_distribution().back();
             unsigned int numBites = 0;
-            while (p > ParamManager::instance().get_cumulative_bite_frequency_distribution()[numBites])
+            while (p > ParamManager::get_cumulative_bite_frequency_distribution()[numBites])
                 ++numBites;
 
             for (unsigned int b=0; b<numBites; ++b)
@@ -233,22 +233,22 @@ void ModelDriver::create_unique_initial_strains(std::vector<Strain>& _initialStr
     //Produce a random of all possible antigens
     std::cout << "initialising antigen pool" << std::endl;
     std::vector<Antigen> allAntigens;
-    for (unsigned int i=0; i<ParamManager::instance().get_int("num_phenotypes"); ++i)
-        allAntigens.push_back(i << ParamManager::instance().get_int("num_genotype_only_bits"));
+    for (unsigned int i=0; i<ParamManager::num_phenotypes; ++i)
+        allAntigens.push_back(i << ParamManager::num_genotype_only_bits);
     std::random_shuffle(allAntigens.begin(), allAntigens.end());
 
     //Create (unique) strain list
     std::cout << "initialising strain pool" << std::endl;
-    _initialStrainPool.reserve(ParamManager::instance().get_int("initial_num_strains"));
+    _initialStrainPool.reserve(ParamManager::initial_num_strains);
     unsigned int currentIndex=0;
-    for (unsigned int s=0; s<ParamManager::instance().get_int("initial_num_strains"); ++s)
+    for (unsigned int s=0; s<ParamManager::initial_num_strains; ++s)
     {
         Strain newStrain;
-        for (unsigned int i=0; i<ParamManager::instance().get_int("repertoire_size"); ++i)
+        for (unsigned int i=0; i<ParamManager::repertoire_size; ++i)
         {
-            if (currentIndex >= ParamManager::instance().get_int("initial_antigen_diversity"))
+            if (currentIndex >= ParamManager::initial_antigen_diversity)
             {
-                std::random_shuffle(allAntigens.begin(), allAntigens.begin()+ParamManager::instance().get_int("initial_antigen_diversity"));
+                std::random_shuffle(allAntigens.begin(), allAntigens.begin()+ParamManager::initial_antigen_diversity);
                 currentIndex = 0;
             }
 
@@ -264,13 +264,13 @@ void ModelDriver::create_random_initial_strains(std::vector<Strain>& _initialStr
     //Generate initial pool of antigen diversity
     std::cout << "initialising antigen pool" << std::endl;
     std::vector<Antigen> initialAntigenPool;
-    initialAntigenPool.reserve(ParamManager::instance().get_int("initial_antigen_diversity"));
-    for (unsigned int a=0; a<ParamManager::instance().get_int("initial_antigen_diversity"); ++a)
-        initialAntigenPool.push_back(random_antigen() << ParamManager::instance().get_int("num_genotype_only_bits")); //turn antigen into gene
+    initialAntigenPool.reserve(ParamManager::initial_antigen_diversity);
+    for (unsigned int a=0; a<ParamManager::initial_antigen_diversity; ++a)
+        initialAntigenPool.push_back(random_antigen() << ParamManager::num_genotype_only_bits); //turn antigen into gene
 
     //Generate initial pool of strains from available initial antigen diversity
     std::cout << "initialising strain pool" << std::endl;
-    _initialStrainPool.reserve(ParamManager::instance().get_int("initial_num_strains"));
-    for (unsigned int s=0; s<ParamManager::instance().get_int("initial_num_strains"); ++s)
+    _initialStrainPool.reserve(ParamManager::initial_num_strains);
+    for (unsigned int s=0; s<ParamManager::initial_num_strains; ++s)
         _initialStrainPool.push_back(strain_from_antigen_pool(initialAntigenPool));
 }

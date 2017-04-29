@@ -11,7 +11,7 @@ void utilities::initialise_random()
     srand(seed);
 
     std::ofstream file;
-    file.open(ParamManager::instance().file_path()+ParamManager::instance().run_name()+"_seed.txt", std::ofstream::out | std::ofstream::trunc);
+    file.open(ParamManager::file_path()+ParamManager::run_name()+"_seed.txt", std::ofstream::out | std::ofstream::trunc);
     file << seed;
 
     file.flush();

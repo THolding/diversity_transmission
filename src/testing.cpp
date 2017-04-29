@@ -13,7 +13,7 @@ void testing::new_tests()
 {
     utilities::initialise_random();
     BITE_FREQUENCY_TABLE cumulativeBiteFrequencyDistribution;
-    cumulativeBiteFrequencyDistribution = ParamManager::instance().get_cumulative_bite_frequency_distribution();
+    cumulativeBiteFrequencyDistribution = ParamManager::get_cumulative_bite_frequency_distribution();
     PTABLE pDeathMosquitoes;
     pDeathMosquitoes = generate_mosquito_ptable();
     Output output(nullptr);

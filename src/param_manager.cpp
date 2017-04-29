@@ -2,6 +2,7 @@
 #include "mosquito.hpp"
 #include "utilities.hpp"
 #include "adaptors/output_interval_adaptor.hpp"
+#include "diversity_monitor.hpp"
 #include <cmath>
 #include <limits>
 #include <algorithm>
@@ -9,57 +10,53 @@
 #include <iostream>
 #include <omp.h>
 
-//Default parameters setup in private constructor.
-ParamManager::ParamManager()
-{
-    std::cout << "Initialised ParamManager singleton instance.\n";
+std::string ParamManager::runName = "default";
+std::string ParamManager::filePath = "";
 
-    paramsBool["verbose"] = false;
-    paramsBool["unique_initial_strains"] = false;
-    paramsInt["run_time"] = 10000;//50000;
-    paramsInt["output_interval"] = 250;//250;
-    paramsInt["burn_in_period"] = 3000;//3000;
+bool ParamManager::verbose = false;
+bool ParamManager::unique_initial_strains = false;
 
-    paramsInt["num_hosts"] = 8000;
-    paramsInt["initial_num_mosquitoes"] = 8000;
+unsigned int ParamManager::run_time = 10000;//50000;
+unsigned int ParamManager::output_interval = 250;//250;
+unsigned int ParamManager::burn_in_period = 3000;//3000;
+unsigned int ParamManager::num_hosts = 8000;
+unsigned int ParamManager::initial_num_mosquitoes = 8000;
+unsigned int ParamManager::initial_antigen_diversity = 2500;
+unsigned int ParamManager::initial_num_strains = 40;
+unsigned int ParamManager::initial_num_mosquito_infections = 500;
+unsigned int ParamManager::num_phenotypes = 50000;
+unsigned int ParamManager::num_genotype_only_bits = 7;
+unsigned int ParamManager::genotypic_space_size = std::numeric_limits<unsigned int>::max();
+unsigned int ParamManager::repertoire_size = 60;
+unsigned int ParamManager::mean_mosquito_life_expectancy = 32; //In days, Bellan2010.
+unsigned int ParamManager::mosquito_eip = 10; //Extrinsic inoculation period in days, Deitz1974.
 
-    paramsInt["initial_antigen_diversity"] = 2500;
-    paramsInt["initial_num_strains"] = 40;
-    paramsInt["initial_num_mosquito_infections"] = 500;
-    paramsInt["num_phenotypes"] = 50000;
-    paramsInt["num_genotype_only_bits"] = 7;
-    paramsInt["genotypic_space_size"] = std::numeric_limits<unsigned int>::max();
-    paramsInt["repertoire_size"] = 60;
-    paramsInt["mean_mosquito_life_expectancy"] = 32; //In days, Bellan2010.
-    paramsInt["mosquito_eip"] = 10; //Extrinsic inoculation period in days, Deitz1974.
-    paramsFloat["bite_rate"] = 0.12f;
-    paramsFloat["intergenic_recombination_p"] = 0.01f;
-    paramsFloat["intragenic_recombination_p"] = 0.002f;
-    paramsFloat["recombination_scale"] = 50.0f;
-    paramsFloat["infection_duration_scale"] = 2.0f;
-    paramsFloat["infectivity_scale"] = 0.5f;
-    paramsFloat["cross_immunity"] = 0.0f;
+float ParamManager::bite_rate = 0.12f;
+float ParamManager::intergenic_recombination_p = 0.01f;
+float ParamManager::intragenic_recombination_p = 0.002f;
+float ParamManager::recombination_scale = 50.0f;
+float ParamManager::infection_duration_scale = 2.0f;
+float ParamManager::infectivity_scale = 0.5f;
+float ParamManager::cross_immunity = 0.0f;
 
-    ////Output management
-    paramsBool["output_antigen_frequency"] = false; //Outputs the frequency with which antigens are present in the parasite population.
-    paramsBool["output_host_susceptibility"] = false; //Outputs a number (ranging between 0 and 1) indicating the mean susceptibility of the host popualtion to currently circulating parasite population.
-    //paramsBool["output_parasite_adaptedness"] = false; //Outputs a measure of how well the parasite population is adapted to the current host immunity
-    paramsBool["output_strain_structure"] = false; //Output a list of all strain vector frequencies each output interval (uses multiple files).
-    //paramsBool["output_shannon_entropy"] = true; //Outputs shannon entropy.
+////Output management
+bool ParamManager::output_antigen_frequency = false; //Outputs the frequency with which antigens are present in the parasite population.
+bool ParamManager::output_host_susceptibility = false; //Outputs a number (ranging between 0 and 1) indicating the mean susceptibility of the host popualtion to currently circulating parasite population.
+bool ParamManager::output_strain_structure = false; //Output a list of all strain vector frequencies each output interval (uses multiple files).
 
-    ////Dynamic support parameters.
-    //Dynamic mosquito population (MosquitoPopulationAdaptor).
-    paramsBool["dyn_num_mosquitoes"] = false; //Used to know whether or not to output timeseries of number of mosquitoes for example.
-    paramsInt["max_num_mosquitoes"] = paramsInt["initial_num_mosquitoes"]; //Used to reserve space in vectors.
-    //Dynamic bite rate (BiteRateAdaptor).
-    paramsBool["dyn_bite_rate"] = false;
-    paramsBool["dyn_intragenic_recombination_p"] = false;
+////Dynamic support parameters.
+//Dynamic mosquito population (MosquitoPopulationAdaptor).
+bool ParamManager::dyn_num_mosquitoes = false; //Used to know whether or not to output timeseries of number of mosquitoes for example.
+unsigned int ParamManager::max_num_mosquitoes = initial_num_mosquitoes; //Used to reserve space in vectors.
+//Dynamic bite rate (BiteRateAdaptor).
+bool ParamManager::dyn_bite_rate = false;
+bool ParamManager::dyn_intragenic_recombination_p = false;
 
-    //paramsBool["dyn_num_hosts"] = false;
-    //paramsInt["num_hosts_max"] = 0; //Used to reserve space in vectors.
-
-    recalculate_derived_parameters();
-}
+std::list<float> ParamManager::immunityMask;
+BITE_FREQUENCY_TABLE ParamManager::cumulativeBiteFrequencyDistribution;
+unsigned int ParamManager::output_size_needed = 0;
+std::array<float, 2> ParamManager::recombination_cumu_p;
+std::list<Adaptor*> ParamManager::adaptors;
 
 bool ParamManager::recalculate_derived_parameters()
 {
@@ -76,18 +73,20 @@ bool ParamManager::recalculate_derived_parameters()
     //if (paramsBool["output_parasite_adaptedness"])
     //    paramsBool["output_antigen_frequency"] = true;
 
+    DiversityMonitor::reset();
+
     return true;
 }
 
 bool ParamManager::recalculate_recombination_distributions()
 {
-     recombination_cumu_p = { paramsFloat["intergenic_recombination_p"], paramsFloat["intergenic_recombination_p"]+paramsFloat["intragenic_recombination_p"]};
+     recombination_cumu_p = { intergenic_recombination_p, intergenic_recombination_p+intragenic_recombination_p};
      return true;
 }
 
 void ParamManager::recalculate_cumulative_bite_frequency_distribution()
 {
-    const float biteRate = paramsFloat["bite_rate"];
+    const float biteRate = ParamManager::bite_rate;
     BITE_FREQUENCY_TABLE pdfPoisson;
     for (unsigned int k=0; k<pdfPoisson.size(); k++)
         pdfPoisson[k] = ((float)std::pow(biteRate, k) * std::exp(-biteRate)) / (float) utilities::factorial(k);
@@ -106,7 +105,7 @@ void ParamManager::recalculate_immunity_mask()
 
     immunityMask.push_back(1.0); //peak.
 
-    if (paramsFloat["cross_immunity"] == 0) //If cross-immunity is turned off, just return the peak.
+    if (ParamManager::cross_immunity == 0.0f) //If cross-immunity is turned off, just return the peak.
         return;
     else
     {
@@ -114,7 +113,7 @@ void ParamManager::recalculate_immunity_mask()
         unsigned int x = 1;
         float curVal = 1.0;
         float mu = 0.0;
-        float var = paramsFloat["cross_immunity"]; //Variance
+        float var = ParamManager::cross_immunity; //Variance
         float amp = 1.0;
 
         while (curVal >= 0.01) //Keep going until the distribution is very low.
@@ -138,94 +137,99 @@ void ParamManager::recalculate_immunity_mask()
 
 void ParamManager::recalculate_output_array_size_needed()
 {
-    unsigned int sizeNeeded = (paramsInt["run_time"] / paramsInt["output_interval"]) + 1;
+    unsigned int sizeNeeded = (run_time / output_interval) + 1;
 
     for (const Adaptor* adaptor : adaptors)
     {
         //For each OutputIntervalAdaptor adjust the baseline size needed by the appropriate amount.
         if (adaptor->get_adaptor_name() == "OutputIntervalAdaptor")
         {
-            std::cout << "before: " << paramsInt["output_size_needed"] << "\n";
+            //std::cout << "before: " << output_size_needed << "\n";
             unsigned int adaptorSizeNeeded = (adaptor->get_stop_t() - adaptor->get_start_t()) / static_cast<const OutputIntervalAdaptor*>(adaptor)->get_target_output_interval();
-            unsigned int baselineSizeNeeded = (adaptor->get_stop_t() - adaptor->get_start_t()) / paramsInt["output_interval"];
+            unsigned int baselineSizeNeeded = (adaptor->get_stop_t() - adaptor->get_start_t()) / output_interval;
             int change = adaptorSizeNeeded - baselineSizeNeeded;
             sizeNeeded += change;
-            std::cout << "before: " << sizeNeeded << "\n";
+            //std::cout << "before: " << sizeNeeded << "\n";
         }
     }
 
-    paramsInt["output_size_needed"] = sizeNeeded;
-}
-
-//Getters
-float ParamManager::get_float(std::string paramName) const
-{
-    if (paramsFloat.count(paramName) == 1)
-        return paramsFloat.at(paramName);
-    else
-        throw std::runtime_error("ParamManager::get_float Attempted to access unknown parameter with key: "+paramName);
-}
-
-unsigned int ParamManager::get_int(std::string paramName) const
-{
-    if (paramsInt.count(paramName) == 1)
-        return paramsInt.at(paramName);
-    else
-        throw std::runtime_error("ParamManager::get_int Attempted to access unknown parameter with key: "+paramName);
-}
-
-bool ParamManager::get_bool(std::string paramName) const
-{
-    if (paramsBool.count(paramName) == 1)
-        return paramsBool.at(paramName);
-    else
-        throw std::runtime_error("ParamManager::get_bool Attempted to access unknown parameter with key: "+paramName);
+    output_size_needed = sizeNeeded;
 }
 
 void ParamManager::set_param(const std::string name, const std::string value)
 {
-    if (paramsInt.count(name) == 1)
-        set_int(name, std::stoi(value));
-    else if (paramsFloat.count(name) == 1)
-        set_float(name, std::stof(value));
-    else if (paramsBool.count(name) == 1) {
-        bool boolVal = (value == "true" || value == "1" || value == "True" || value == "TRUE");
-        set_bool(name, boolVal);
-        }
-    else if (name == "run_name")
-        set_run_name(value);
+    if (name == "run_name")
+        runName = value;
     else if (name == "file_path")
-        set_file_path(value);
+        filePath = value;
+
+    else if (name == "verbose")
+        verbose = (value == "true" || value == "1" || value == "True" || value == "TRUE");
+    else if (name == "unique_initial_strains")
+        unique_initial_strains = (value == "true" || value == "1" || value == "True" || value == "TRUE");
+
+    else if (name == "run_time")
+        run_time = std::stoi(value);
+    else if (name == "output_interval")
+        output_interval = std::stoi(value);
+    else if (name == "burn_in_period")
+        burn_in_period = std::stoi(value);
+    else if (name == "num_hosts")
+        num_hosts = std::stoi(value);
+    else if (name == "initial_num_mosquitoes")
+        initial_num_mosquitoes = std::stoi(value);
+    else if (name == "initial_antigen_diversity")
+        initial_antigen_diversity = std::stoi(value);
+    else if (name == "initial_num_strains")
+        initial_num_strains = std::stoi(value);
+    else if (name == "initial_num_mosquito_infections")
+        initial_num_mosquito_infections = std::stoi(value);
+    else if (name == "num_phenotypes")
+        num_phenotypes = std::stoi(value);
+    else if (name == "num_genotype_only_bits")
+        num_genotype_only_bits = std::stoi(value);
+    else if (name == "genotypic_space_size")
+        genotypic_space_size = std::stoi(value);
+    else if (name == "repertoire_size")
+        repertoire_size = std::stoi(value);
+    else if (name == "mean_mosquito_life_expectancy")
+        mean_mosquito_life_expectancy = std::stoi(value);
+    else if (name == "mosquito_eip")
+        mosquito_eip = std::stoi(value);
+
+    else if (name == "bite_rate")
+        bite_rate = std::stof(value);
+    else if (name == "intergenic_recombination_p")
+        intergenic_recombination_p = std::stof(value);
+    else if (name == "intragenic_recombination_p")
+        intragenic_recombination_p = std::stof(value);
+    else if (name == "recombination_scale")
+        recombination_scale = std::stof(value);
+    else if (name == "infection_duration_scale")
+        infection_duration_scale = std::stof(value);
+    else if (name == "infectivity_scale")
+        infectivity_scale = std::stof(value);
+    else if (name == "cross_immunity")
+        cross_immunity = std::stof(value);
+
+    else if (name == "output_antigen_frequency")
+        output_antigen_frequency = (value == "true" || value == "1" || value == "True" || value == "TRUE");
+    else if (name == "output_host_susceptibility")
+        output_host_susceptibility = (value == "true" || value == "1" || value == "True" || value == "TRUE");
+    else if (name == "output_strain_structure")
+        output_strain_structure = (value == "true" || value == "1" || value == "True" || value == "TRUE");
+
+    else if (name == "dyn_num_mosquitoes")
+        dyn_num_mosquitoes = (value == "true" || value == "1" || value == "True" || value == "TRUE");
+    else if (name == "max_num_mosquitoes")
+        max_num_mosquitoes = std::stoi(value);
+    else if (name == "dyn_bite_rate")
+        dyn_bite_rate = (value == "true" || value == "1" || value == "True" || value == "TRUE");
+    else if (name == "dyn_intragenic_recombination_p")
+        dyn_intragenic_recombination_p = (value == "true" || value == "1" || value == "True" || value == "TRUE");
+
     else
-    {
         throw std::runtime_error("ParamManager::set_param cannot create a new parameter with name '" + name + "'. You can only set values for pre-existing parameters.");
-    }
-}
-
-
-//Setters
-void ParamManager::set_float(const std::string paramName, const float param)
-{
-    if (paramsFloat.count(paramName) == 1)
-        paramsFloat[paramName] = param;
-    else
-        throw std::runtime_error("ParamManager::set_float Attempted to set unknown parameter with key: "+paramName);
-}
-
-void ParamManager::set_int(const std::string paramName, const int param)
-{
-    if (paramsInt.count(paramName) == 1)
-        paramsInt[paramName] = param;
-    else
-        throw std::runtime_error("ParamManager::set_int Attempted to set unknown parameter with key: "+paramName);
-}
-
-void ParamManager::set_bool(const std::string paramName, const bool param)
-{
-    if (paramsBool.count(paramName) == 1)
-        paramsBool[paramName] = param;
-    else
-        throw std::runtime_error("ParamManager::set_bool Attempted to set unknown parameter with key: "+paramName);
 }
 
 void ParamManager::add_adaptor(Adaptor* adaptor)
@@ -237,7 +241,7 @@ void ParamManager::add_adaptor(Adaptor* adaptor)
 }
 
 //Returns true if the proposed adaptor is compatable with current list of adaptors.
-bool ParamManager::is_compatable_adaptor(const Adaptor& proposed) const
+bool ParamManager::is_compatable_adaptor(const Adaptor& proposed)
 {
     //Check start and stop times make sense.
     if (proposed.get_stop_t() < proposed.get_start_t())
