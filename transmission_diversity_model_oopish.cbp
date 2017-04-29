@@ -24,7 +24,11 @@
 					<Add option="-march=corei7" />
 					<Add option="-fexpensive-optimizations" />
 					<Add option="-O3" />
+					<Add option="-fopenmp" />
 				</Compiler>
+				<Linker>
+					<Add option="-fopenmp" />
+				</Linker>
 			</Target>
 		</Build>
 		<Compiler>

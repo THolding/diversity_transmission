@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <omp.h>
 
 
 void Output::preinitialise_output_storage()
@@ -105,6 +106,7 @@ void Output::calc_host_dependent_metrics(const Hosts& hosts)
     float multiplicityOfInfection = 0.0f;
     float absImmunity = 0.0f;
 
+    #pragma omp parallel for reduction(+:prevalence, multiplicityOfInfection, absImmunity)
     for (unsigned int i=0; i<hosts.size(); ++i)
     {
         if (hosts[i].is_infected())
@@ -125,8 +127,8 @@ void Output::calc_host_dependent_metrics(const Hosts& hosts)
 
     prevalence = prevalence / ParamManager::instance().get_int("num_hosts");
     multiplicityOfInfection = multiplicityOfInfection / ParamManager::instance().get_int("num_hosts");
-
     absImmunity = absImmunity / ParamManager::instance().get_int("num_hosts");
+
     hPrevalence.push_back(prevalence);
 
     moi.push_back(multiplicityOfInfection);
@@ -141,11 +143,12 @@ void Output::calc_mosquito_dependent_metrics(const Mosquitoes& mosquitoes)
     float prevalence=0.0f; //Mosquito prevalence
 
     //Loop through mosquitoes
-    for (const Mosquito& mosquito : mosquitoes)
+    #pragma omp parallel for reduction(+:prevalence)
+    for (unsigned int i=0; i<mosquitoes.size(); ++i)
     {
         //Count number of mosquitoes that are infected
-        if (mosquito.is_active())
-            prevalence += mosquito.is_infected();
+        if (mosquitoes[i].is_active())
+            prevalence += mosquitoes[i].is_infected();
     }
     prevalence = prevalence / model->get_mos_manager()->get_count();
     mPrevalence.push_back(prevalence);
@@ -188,31 +191,39 @@ void Output::calc_host_mosquito_dependent_metrics(const Hosts& hosts, const Mosq
     std::vector<unsigned int> curAntigenFrequencies;
     curAntigenFrequencies = std::vector<unsigned int>(ParamManager::instance().get_int("num_phenotypes"));
 
-    unsigned int uniqueAntigenCount = 0;
-
     //All host infections
+    unsigned int uniqueAntigenCount = 0;
     unsigned int antigenTotal = 0;
-    for (const Host& host : hosts)
+    //#pragma omp parallel for reduction (+:antigenTotal, uniqueAntigenCount) //can't really be parallelised effectively because each must read and modify curAntigenFrequencies
+    //Parallelised count_individual_antigens instead
+    for (unsigned int i=0; i<hosts.size(); ++i)
     {
-        if (host.infection1.infected) {
-            count_individual_antigens(curAntigenFrequencies, uniqueAntigenCount, host.infection1.strain);
+        if (hosts[i].infection1.infected) {
+            count_individual_antigens(curAntigenFrequencies, uniqueAntigenCount, hosts[i].infection1.strain);
             antigenTotal += ParamManager::instance().get_int("repertoire_size");
         }
-        if (host.infection2.infected) {
-            count_individual_antigens(curAntigenFrequencies, uniqueAntigenCount, host.infection2.strain);
+        if (hosts[i].infection2.infected) {
+            count_individual_antigens(curAntigenFrequencies, uniqueAntigenCount, hosts[i].infection2.strain);
             antigenTotal += ParamManager::instance().get_int("repertoire_size");
         }
     }
 
 
     //All mosquito infections
-    for (const Mosquito& mosquito : mosquitoes)
+    unsigned int mosUniqueAntigenCount = 0;
+    unsigned int mosAntigenTotal = 0;
+    //#pragma omp parallel for reduction (+:mosUniqueAntigenCount, mosAntigenTotal) //can't really be parallelised effectively because each must read and modify curAntigenFrequencies
+    //Parallelised count_individual_antigens instead
+    for (unsigned int i=0; i<mosquitoes.size(); ++i)
     {
-        if (mosquito.is_active() && mosquito.infection.infected) {
-            count_individual_antigens(curAntigenFrequencies, uniqueAntigenCount, mosquito.infection.strain);
-            antigenTotal += 60;
+        if (mosquitoes[i].is_active() && mosquitoes[i].infection.infected) {
+            count_individual_antigens(curAntigenFrequencies, mosUniqueAntigenCount, mosquitoes[i].infection.strain);
+            mosAntigenTotal += 60;
         }
     }
+
+    uniqueAntigenCount += mosUniqueAntigenCount;
+    antigenTotal += mosAntigenTotal;
 
     //Use frequency to calculate some outputs
     //std::cout << uniqueAntigenCount << ", " << ((float)uniqueAntigenCount) / ((float)ParamManager::instance().get_int("num_phenotypes")) << "\n";
@@ -238,6 +249,30 @@ void Output::calc_host_mosquito_dependent_metrics(const Hosts& hosts, const Mosq
     }
 }
 
+//TODO: remove antigenFreqs, and calculate it (if neccessary - we can probably just assume 0 if antigenCounter.find(a) == antigenCounter.end() - recal the vector once at the end).
+//TODO: reconsider parallelisation
+void Output::count_individual_antigens(std::vector<unsigned int>& antigenFreqs, unsigned int& antigenCounter, const Strain& strain)
+{
+    unsigned int antigenCounterChange = 0;
+
+    #pragma omp parallel for reduction(+:antigenCounterChange) //probably not very efficient because of read/writes to shared antigenFrequs
+    for (unsigned int i=0; i<strain.size(); ++i)
+    //for (const Antigen& antigen : strain)
+    {
+        //if antigen type hasn't already been counted... No need to increment because we're just marking whether or not it exists
+        if (antigenFreqs[get_phenotype_id(strain[i])] == 0)
+            ++antigenCounterChange;
+        //if (antigenFreqs[antigen] == 0)
+        //    ++antigenCounter;
+
+        //if (ParamManager::instance().get_bool("output_antigen_frequency"))
+        antigenFreqs[get_phenotype_id(strain[i])] += 1;
+    }
+
+    antigenCounter += antigenCounterChange;
+}
+
+
 float Output::calc_shannon_entropy(const std::vector<unsigned int>& curAntigenFrequency, const unsigned int totalAntigens)//const std::unordered_map<Antigen, const unsigned int>& curAntigenFrequency)
 {
     if (totalAntigens == 0)
@@ -249,9 +284,11 @@ float Output::calc_shannon_entropy(const std::vector<unsigned int>& curAntigenFr
     }
 
     float entropy = 0.0;
-    for (float proportion : proportions) {
-        if (proportion != 0)
-            entropy -= proportion * std::log(proportion);
+    #pragma omp parallel for reduction(+:entropy)
+    for (unsigned int i=0; i<proportions.size(); ++i)
+    {
+        if (proportions[i] != 0)
+            entropy -= proportions[i] * std::log(proportions[i]);
     }
     //std::cout << "Entropy = " << entropy << "\n";
 
@@ -265,10 +302,11 @@ float Output::calc_host_susceptibility(const std::vector<unsigned int>& curAntig
         return 0;
 
     //Calculate immunity to each antigen
-    std::vector<float> immunity;
+    std::vector<float> immunity(ParamManager::instance().get_int("num_phenotypes"), 0.0f);
+
+    #pragma omp parallel for
     for (unsigned int a=0; a<ParamManager::instance().get_int("num_phenotypes"); ++a)
     {
-        immunity.push_back(0.0);
         for (unsigned int h=0; h<hosts.size(); ++h)
             immunity[a] += 1.0 - hosts[h].immuneState[a];
         immunity[a] = immunity[a] / (float)hosts.size();
@@ -279,58 +317,20 @@ float Output::calc_host_susceptibility(const std::vector<unsigned int>& curAntig
 
     //Calculate host susceptibility
     float hostSusceptibility = 0.0f;
+    #pragma omp parallel for reduction (+:hostSusceptibility)
     for (unsigned int a=0; a<ParamManager::instance().get_int("num_phenotypes"); ++a) {
-        if (((float)curAntigenFrequencies[a] / (float) antigenTotal) > 1.0)
-            std::cout << "WARNING: p(a) = " << ((float)curAntigenFrequencies[a] / (float) antigenTotal) << "\n";
+        //if (((float)curAntigenFrequencies[a] / (float) antigenTotal) > 1.0)
+        //    std::cout << "WARNING: p(a) = " << ((float)curAntigenFrequencies[a] / (float) antigenTotal) << "\n";
         hostSusceptibility += ((float)curAntigenFrequencies[a] / (float) antigenTotal) * immunity[a];
     }
 
-    std::cout << "Host susceptibility = " << hostSusceptibility << "\n";
+    //std::cout << "Host susceptibility = " << hostSusceptibility << "\n";
     return hostSusceptibility;
 }
 
-//Measure of how well the parasite population is adapted to host immunity (converse of host susceptibility).
-float Output::calc_parasite_adaptedness(const std::vector<unsigned int>& curAntigenFrequencies, const unsigned int antigenTotal, const Hosts& hosts)
-{
-    if (antigenTotal == 0)
-        return 0;
-
-    //Calculate susceptibility
-    std::vector<float> susceptibility;
-    for (unsigned int a=0; a<ParamManager::instance().get_int("num_phenotypes"); ++a)
-    {
-        susceptibility.push_back(0.0);
-        for (unsigned int h=0; h<hosts.size(); ++h)
-            susceptibility[a] = susceptibility[a] + 1.0 - hosts[h].immuneState[a];
-        susceptibility[a] = susceptibility[a] / (float)hosts.size();
-    }
-
-    float parasiteAdaptedness = 0.0f;
-    //For each antigen apply the forumlat and sum
-    for (unsigned int a=0; a<ParamManager::instance().get_int("num_phenotypes"); ++a)
-        parasiteAdaptedness += (curAntigenFrequencies[a] / (float) antigenTotal) * susceptibility[a];
-
-    //std::cout << "Parasite adaptedness = " << parasiteAdaptedness << "\n";
-    return parasiteAdaptedness;
-}
-
-//TODO: remove antigenFreqs, and calculate it (if neccessary - we can probably just assume 0 if antigenCounter.find(a) == antigenCounter.end() - recal the vector once at the end).
-void Output::count_individual_antigens(std::vector<unsigned int>& antigenFreqs, unsigned int& antigenCounter, const Strain& strain)
-{
-    for (const Antigen& antigen : strain)
-    {
-        //if antigen type hasn't already been counted... No need to increment because we're just marking whether or not it exists
-        if (antigenFreqs[get_phenotype_id(antigen)] == 0)
-            ++antigenCounter;
-        //if (antigenFreqs[antigen] == 0)
-        //    ++antigenCounter;
-
-        //if (ParamManager::instance().get_bool("output_antigen_frequency"))
-        antigenFreqs[get_phenotype_id(antigen)] += 1;
-    }
-}
 
 //Counts and outputs the frequency of strain repertoires.
+//TODO: optimise with omp. http://stackoverflow.com/questions/15855609/openmpc-c-efficient-way-of-sharing-an-unordered-mapstring-vectorint-an for hints on sharing the unordered_map
 void Output::process_strain_structure_output(const Hosts& hosts, const Mosquitoes& mosquitoes)
 {
     if (ParamManager::instance().get_bool("output_strain_structure") == false)

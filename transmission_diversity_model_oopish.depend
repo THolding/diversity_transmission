@@ -1374,3 +1374,196 @@
 	"host.hpp"
 	"output.hpp"
 
+1487758932 source:/home/verwirrt/Desktop/transmission_diversity_model_openmp/src/adaptors/bite_rate_adaptor.cpp
+	"bite_rate_adaptor.hpp"
+	"../param_manager.hpp"
+	<iostream>
+
+1484062498 /home/verwirrt/Desktop/transmission_diversity_model_openmp/src/adaptors/bite_rate_adaptor.hpp
+	"adaptor.hpp"
+
+1484061762 /home/verwirrt/Desktop/transmission_diversity_model_openmp/src/adaptors/adaptor.hpp
+	<string>
+
+1485253622 /home/verwirrt/Desktop/transmission_diversity_model_openmp/src/param_manager.hpp
+	"adaptors/adaptor.hpp"
+	"global_typedefs.hpp"
+	<array>
+	<list>
+	<string>
+	<unordered_map>
+
+1483710798 /home/verwirrt/Desktop/transmission_diversity_model_openmp/src/global_typedefs.hpp
+	<array>
+
+1487772172 source:/home/verwirrt/Desktop/transmission_diversity_model_openmp/src/adaptors/intragenic_recombination_p_adaptor.cpp
+	"intragenic_recombination_p_adaptor.hpp"
+	"../param_manager.hpp"
+	<iostream>
+
+1487758768 /home/verwirrt/Desktop/transmission_diversity_model_openmp/src/adaptors/intragenic_recombination_p_adaptor.hpp
+	"adaptor.hpp"
+
+1484064324 source:/home/verwirrt/Desktop/transmission_diversity_model_openmp/src/adaptors/mosquito_population_adaptor.cpp
+	"mosquito_population_adaptor.hpp"
+	"../mosquito_manager.hpp"
+	<cmath>
+	<iostream>
+
+1484062330 /home/verwirrt/Desktop/transmission_diversity_model_openmp/src/adaptors/mosquito_population_adaptor.hpp
+	"adaptor.hpp"
+
+1484044208 /home/verwirrt/Desktop/transmission_diversity_model_openmp/src/mosquito_manager.hpp
+	"mosquito.hpp"
+	<vector>
+
+1484065396 /home/verwirrt/Desktop/transmission_diversity_model_openmp/src/mosquito.hpp
+	"infection.hpp"
+	"host.hpp"
+
+1485169638 /home/verwirrt/Desktop/transmission_diversity_model_openmp/src/infection.hpp
+	"strain.hpp"
+
+1489590764 /home/verwirrt/Desktop/transmission_diversity_model_openmp/src/strain.hpp
+	<vector>
+	"global_typedefs.hpp"
+
+1485252108 /home/verwirrt/Desktop/transmission_diversity_model_openmp/src/host.hpp
+	"infection.hpp"
+	"param_manager.hpp"
+
+1484230940 source:/home/verwirrt/Desktop/transmission_diversity_model_openmp/src/adaptors/output_interval_adaptor.cpp
+	"output_interval_adaptor.hpp"
+	"../param_manager.hpp"
+	<iostream>
+
+1484221326 /home/verwirrt/Desktop/transmission_diversity_model_openmp/src/adaptors/output_interval_adaptor.hpp
+	"adaptor.hpp"
+
+1483708358 source:/home/verwirrt/Desktop/transmission_diversity_model_openmp/src/demographic_tools.cpp
+	"demographic_tools.hpp"
+	"utilities.hpp"
+	"param_manager.hpp"
+	<cmath>
+
+1483710666 /home/verwirrt/Desktop/transmission_diversity_model_openmp/src/demographic_tools.hpp
+	"host.hpp"
+	"mosquito.hpp"
+
+1485254846 /home/verwirrt/Desktop/transmission_diversity_model_openmp/src/utilities.hpp
+	<array>
+	<fstream>
+	<string>
+	<iostream>
+
+1485169620 source:/home/verwirrt/Desktop/transmission_diversity_model_openmp/src/host.cpp
+	"host.hpp"
+	"utilities.hpp"
+	<cmath>
+	<iostream>
+
+1486138120 source:/home/verwirrt/Desktop/transmission_diversity_model_openmp/src/infection.cpp
+	"infection.hpp"
+	"param_manager.hpp"
+	"utilities.hpp"
+	<iostream>
+
+1491569598 source:/home/verwirrt/Desktop/transmission_diversity_model_openmp/src/main.cpp
+	<iostream>
+	"param_manager.hpp"
+	"model_driver.hpp"
+	"testing.hpp"
+	"utilities.hpp"
+	<fstream>
+	<sstream>
+	<limits>
+	"adaptors/mosquito_population_adaptor.hpp"
+	"adaptors/bite_rate_adaptor.hpp"
+	"adaptors/output_interval_adaptor.hpp"
+	"adaptors/intragenic_recombination_p_adaptor.hpp"
+	"host.hpp"
+	"output.hpp"
+
+1490269880 /home/verwirrt/Desktop/transmission_diversity_model_openmp/src/model_driver.hpp
+	"host.hpp"
+	"output.hpp"
+	"mosquito_manager.hpp"
+
+1491558558 /home/verwirrt/Desktop/transmission_diversity_model_openmp/src/output.hpp
+	"host.hpp"
+	"mosquito.hpp"
+
+1481802332 /home/verwirrt/Desktop/transmission_diversity_model_openmp/src/testing.hpp
+
+1493383327 source:/home/verwirrt/Desktop/transmission_diversity_model_openmp/src/model_driver.cpp
+	"model_driver.hpp"
+	"demographic_tools.hpp"
+	"strain.hpp"
+	"utilities.hpp"
+	"param_manager.hpp"
+	<algorithm>
+	<cmath>
+	<vector>
+	<omp.h>
+
+1484133180 source:/home/verwirrt/Desktop/transmission_diversity_model_openmp/src/mosquito.cpp
+	"mosquito.hpp"
+	"output.hpp"
+	"utilities.hpp"
+	<cmath>
+
+1484061190 source:/home/verwirrt/Desktop/transmission_diversity_model_openmp/src/mosquito_manager.cpp
+	"mosquito_manager.hpp"
+	"utilities.hpp"
+
+1493386176 source:/home/verwirrt/Desktop/transmission_diversity_model_openmp/src/output.cpp
+	"output.hpp"
+	"model_driver.hpp"
+	"strain.hpp"
+	"utilities.hpp"
+	<cmath>
+	<sstream>
+	<numeric>
+	<unordered_map>
+	<sys/stat.h>
+	<sys/types.h>
+	<omp.h>
+
+1491558458 source:/home/verwirrt/Desktop/transmission_diversity_model_openmp/src/param_manager.cpp
+	"param_manager.hpp"
+	"mosquito.hpp"
+	"utilities.hpp"
+	"adaptors/output_interval_adaptor.hpp"
+	<cmath>
+	<limits>
+	<algorithm>
+	<iostream>
+	<omp.h>
+
+1489661368 source:/home/verwirrt/Desktop/transmission_diversity_model_openmp/src/strain.cpp
+	"strain.hpp"
+	"param_manager.hpp"
+	"utilities.hpp"
+	<sstream>
+	<algorithm>
+
+1484222434 source:/home/verwirrt/Desktop/transmission_diversity_model_openmp/src/testing.cpp
+	"testing.hpp"
+	"host.hpp"
+	"strain.hpp"
+	"infection.hpp"
+	"mosquito.hpp"
+	"utilities.hpp"
+	"output.hpp"
+	"demographic_tools.hpp"
+	<iostream>
+	<vector>
+
+1485256488 source:/home/verwirrt/Desktop/transmission_diversity_model_openmp/src/utilities.cpp
+	"utilities.hpp"
+	"param_manager.hpp"
+	<cstdlib>
+	<ctime>
+	<cmath>
+	<stdexcept>
+

@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
+#include <omp.h>
 
 void ModelDriver::initialise_model()
 {
@@ -58,15 +59,6 @@ void ModelDriver::initialise_model()
         unsigned int iM = mManager.random_active_mos();
         mosquitoes[iM].infect(initialStrainPool[i % initialStrainPool.size()], false);
     }
-
-    //Temp debug: output all strains
-    /*for (const Strain& strain : initialStrainPool)
-    {
-        std::cout << "Strain:\n";
-        for (const Antigen& a : strain)
-            std::cout << a << ", ";
-        std::cout << "\n\n";
-    }*/
 }
 
 void ModelDriver::run_model()
@@ -144,28 +136,49 @@ void ModelDriver::run_model()
 
 void ModelDriver::age_hosts()
 {
-    for (Host& host : hosts)
-        host.age_host(pDeathHosts);
+    #pragma omp parallel for
+    for (unsigned int i=0; i<hosts.size(); ++i)
+    {
+        hosts[i].age_host(pDeathHosts);
+    }
 }
 
 void ModelDriver::age_mosquitoes()
 {
-    for (Mosquito& mosquito : mosquitoes)
+    #pragma omp parallel for
+    for (unsigned int i=0; i<mosquitoes.size(); ++i)
+    {
+        if (mosquitoes[i].is_active())
+            mosquitoes[i].age_mosquito(pDeathMosquitoes);
+    }
+    /*for (Mosquito& mosquito : mosquitoes)
         if (mosquito.is_active())
-            mosquito.age_mosquito(pDeathMosquitoes);
+            mosquito.age_mosquito(pDeathMosquitoes);*/
 }
 
 void ModelDriver::update_host_infections()
 {
-    for (Host& host : hosts)
-        host.update_infections();
+    #pragma omp parallel for
+    for (unsigned int i=0; i<hosts.size(); ++i)
+    {
+        hosts[i].update_infections();
+    }
+    /*for (Host& host : hosts)
+        host.update_infections();*/
 }
 
 void ModelDriver::update_mosquito_infections()
 {
-    for (Mosquito& mosquito : mosquitoes)
+    #pragma omp parallel for
+    for (unsigned int i=0; i<mosquitoes.size(); ++i)
+    {
+        if (mosquitoes[i].is_active())
+            mosquitoes[i].update_infection();
+    }
+
+    /*for (Mosquito& mosquito : mosquitoes)
         if (mosquito.is_active())
-            mosquito.update_infection();
+            mosquito.update_infection();*/
 }
 
 void ModelDriver::feed_mosquitoes()
@@ -176,7 +189,25 @@ void ModelDriver::feed_mosquitoes()
     else
         allowRecombination = false;
 
-    for (Mosquito& mosquito : mosquitoes)
+    #pragma omp parallel for
+    for (unsigned int i=0; i<mosquitoes.size(); ++i)
+    {
+        if (mosquitoes[i].is_active())
+        {
+            float p = utilities::random_float01()*ParamManager::instance().get_cumulative_bite_frequency_distribution().back();
+            unsigned int numBites = 0;
+            while (p > ParamManager::instance().get_cumulative_bite_frequency_distribution()[numBites])
+                ++numBites;
+
+            for (unsigned int b=0; b<numBites; ++b)
+            {
+                unsigned int iH = utilities::urandom(0, hosts.size());
+                mosquitoes[i].feed(hosts[iH], &output, allowRecombination);
+            }
+        }
+    }
+
+    /*for (Mosquito& mosquito : mosquitoes)
     {
         if (mosquito.is_active()) {
             //Calculate number of times the mosquito feeds.
@@ -192,7 +223,7 @@ void ModelDriver::feed_mosquitoes()
                 mosquito.feed(hosts[iH], &output, allowRecombination);
             }
         }
-    }
+    }*/
 }
 
 //Guarentees that each strain generated is unique and non-overlapping, provided there are still unused antigens left during strain creation.
