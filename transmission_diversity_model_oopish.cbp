@@ -24,6 +24,7 @@
 					<Add option="-march=corei7" />
 					<Add option="-fexpensive-optimizations" />
 					<Add option="-O3" />
+					<Add option="-std=c++11" />
 					<Add option="-fopenmp" />
 				</Compiler>
 				<Linker>
@@ -47,6 +48,8 @@
 		<Unit filename="src/adaptors/output_interval_adaptor.hpp" />
 		<Unit filename="src/demographic_tools.cpp" />
 		<Unit filename="src/demographic_tools.hpp" />
+		<Unit filename="src/diversity_monitor.cpp" />
+		<Unit filename="src/diversity_monitor.hpp" />
 		<Unit filename="src/global_typedefs.hpp" />
 		<Unit filename="src/host.cpp" />
 		<Unit filename="src/host.hpp" />
