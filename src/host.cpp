@@ -15,7 +15,7 @@ void Host::infect(const Strain& strain)
         infection1.infectivity = infectivity_kernal(strain, immuneState);
         infection1.durationRemaining = duration_kernal(strain, immuneState);
         exposure_kernal(strain, immuneState); //not needed as duration_kernal does this now too...
-        if (infection1.durationRemaining > 0)
+        //if (infection1.durationRemaining > 0)
             DiversityMonitor::register_new_strain(strain);
 
     } else if (!infection2.infected)
@@ -25,7 +25,7 @@ void Host::infect(const Strain& strain)
         infection2.infectivity = infectivity_kernal(strain, immuneState);
         infection2.durationRemaining = duration_kernal(strain, immuneState);
         exposure_kernal(strain, immuneState); //not needed as duration_kernal does this now too...
-        if (infection2.durationRemaining > 0)
+        //if (infection2.durationRemaining > 0)
             DiversityMonitor::register_new_strain(strain);
     }
 }

@@ -30,6 +30,7 @@ unsigned int ParamManager::genotypic_space_size = std::numeric_limits<unsigned i
 unsigned int ParamManager::repertoire_size = 60;
 unsigned int ParamManager::mean_mosquito_life_expectancy = 32; //In days, Bellan2010.
 unsigned int ParamManager::mosquito_eip = 10; //Extrinsic inoculation period in days, Deitz1974.
+unsigned int ParamManager::reintroduction_interval = 0;
 
 float ParamManager::bite_rate = 0.12f;
 float ParamManager::intergenic_recombination_p = 0.01f;

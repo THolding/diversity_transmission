@@ -5,18 +5,18 @@
 #include <cmath>
 
 //Enacts infection event to a mosquito if possible. Assumes any probabilistic factors affecting infection chance have been accounted for and infection is still going ahead.
-void Mosquito::infect(const Strain& strain, bool allowRecombination)
+void Mosquito::infect(const Strain& strain, bool allowRecombination, bool bypassGenerationRegister)
 {
     if (infection.infected == false) //Can only be infected once.
     {
         infection.infected = true;
         if (allowRecombination) {
             infection.strain = generate_recombinant_strain(strain);
-            DiversityMonitor::register_new_strain(infection.strain);
+            DiversityMonitor::register_new_strain(infection.strain, bypassGenerationRegister);
         }
         else {
             infection.strain = strain;
-            DiversityMonitor::register_new_strain(infection.strain);
+            DiversityMonitor::register_new_strain(infection.strain, bypassGenerationRegister);
         }
         infection.infectivity = 1.0;
         infection.durationRemaining = ParamManager::mosquito_eip;
@@ -35,6 +35,7 @@ void Mosquito::age_mosquito(const PTABLE& pDeath)
 void Mosquito::kill()
 {
     age = 0;
+
     infection.reset();
 }
 

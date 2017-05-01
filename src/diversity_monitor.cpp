@@ -17,32 +17,44 @@ void DiversityMonitor::reset()
     instance().antigenCounts = std::vector<unsigned int> (ParamManager::num_phenotypes , 0);
 }
 
-void DiversityMonitor::register_antigen_gain(Antigen phenotypeID)
+void DiversityMonitor::register_antigen_gain(Antigen phenotypeID, bool bypassGenerationRegister)
 {
     if (instance().antigenCounts[phenotypeID] == 0) {
+        #pragma omp atomic
         instance().uniqueAntigens++;
-        instance().numNewlyGenerated++;
+        if (bypassGenerationRegister == false) {
+            #pragma omp atomic
+            instance().numNewlyGenerated++;
+        }
     }
-
+    #pragma omp atomic
     instance().totalAntigens++;
+
+    #pragma omp atomic
     instance().antigenCounts[phenotypeID] += 1;
 }
 
 void DiversityMonitor::register_antigen_loss(Antigen phenotypeID)
 {
+    #pragma omp atomic
     instance().totalAntigens--;
+
+    #pragma omp atomic
     instance().antigenCounts[phenotypeID] -= 1;
 
     if (instance().antigenCounts[phenotypeID] == 0) {
+        #pragma omp atomic
         instance().uniqueAntigens--;
+
+        #pragma omp atomic
         instance().numExtinctions++;
     }
 }
 
-void DiversityMonitor::register_new_strain(Strain geneList)
+void DiversityMonitor::register_new_strain(Strain geneList, bool bypassGenerationRegister)
 {
     for (unsigned int a=0; a<geneList.size(); ++a)
-        DiversityMonitor::register_antigen_gain(get_phenotype_id(geneList[a]));
+        DiversityMonitor::register_antigen_gain(get_phenotype_id(geneList[a]), bypassGenerationRegister);
 }
 
 void DiversityMonitor::register_lost_strain(Strain geneList)

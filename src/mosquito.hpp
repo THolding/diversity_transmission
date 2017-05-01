@@ -11,7 +11,7 @@ public:
     Infection infection; //Infection::active = false, by default.
     bool active = true;
 
-    void infect(const Strain& strain, bool allowRecombination);
+    void infect(const Strain& strain, bool allowRecombination, bool bypassGenerationRegister = false); //bypassGeneratioNRegister prevents antigens being registered as newly generated antigens
     void age_mosquito(const PTABLE& pDeath);
     void kill();
     void update_infection();

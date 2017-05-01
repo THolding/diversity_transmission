@@ -23,11 +23,11 @@ public:
 
     static void reset();
 
-    static void register_antigen_gain(Antigen phenotypeID);
+    static void register_antigen_gain(Antigen phenotypeID, bool bypassGenerationRegister=false);
 
     static void register_antigen_loss(Antigen phenotypeID);
 
-    static void register_new_strain(Strain geneList);
+    static void register_new_strain(Strain geneList, bool bypassGenerationRegister=false); //Don't register new generation of strains here (used for reintroducing extinct/initial strains).
 
     static void register_lost_strain(Strain geneList);
 

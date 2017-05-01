@@ -9,6 +9,60 @@
 #include <iostream>
 #include <vector>
 
+#include "model_driver.hpp"
+#include "global_typedefs.hpp"
+
+void testing::test_diversity_counting()
+{
+    ModelDriver model;
+    //ParamManager::recalculate_derived_parameters();
+    model.test();
+}
+
+void testing::long_diversity_count(unsigned int& uniqueCount, unsigned int& totalCount, const std::vector<Host>& hosts, const std::vector<Mosquito>& mosquitoes)
+{
+    std::vector<unsigned int> curAntigenFrequencies;
+    curAntigenFrequencies = std::vector<unsigned int>(ParamManager::num_phenotypes);
+
+    uniqueCount = 0;
+    totalCount = 0;
+
+    //All host infections
+    for (const Host& host : hosts)
+    {
+        if (host.infection1.infected) {
+            long_diversity_count_helper(curAntigenFrequencies, uniqueCount, host.infection1.strain, totalCount);
+        }
+        if (host.infection2.infected) {
+            long_diversity_count_helper(curAntigenFrequencies, uniqueCount, host.infection2.strain, totalCount);
+        }
+    }
+
+
+    //All mosquito infections
+    for (const Mosquito& mosquito : mosquitoes)
+    {
+        if (mosquito.is_active() && mosquito.infection.infected) {
+            long_diversity_count_helper(curAntigenFrequencies, uniqueCount, mosquito.infection.strain, totalCount);
+        }
+    }
+}
+
+//Counts total and unique antigens
+void testing::long_diversity_count_helper(std::vector<unsigned int>& antigenFreqs, unsigned int& antigenCounter, const Strain& strain, unsigned int &totalCount)
+{
+    for (const Antigen& antigen : strain)
+    {
+        //if antigen type hasn't already been counted... No need to increment because we're just marking whether or not it exists
+        if (antigenFreqs[get_phenotype_id(antigen)] == 0)
+            ++antigenCounter;
+
+        antigenFreqs[get_phenotype_id(antigen)] += 1;
+        totalCount++;
+    }
+}
+
+
 void testing::new_tests()
 {
     utilities::initialise_random();

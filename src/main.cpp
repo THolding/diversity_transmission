@@ -11,6 +11,8 @@
 #include "adaptors/output_interval_adaptor.hpp"
 #include "adaptors/intragenic_recombination_p_adaptor.hpp"
 
+#include "diversity_monitor.hpp"
+
 #include "host.hpp"
 #include "output.hpp"
 
@@ -19,48 +21,16 @@ void parse_adaptor_from_cmd(const std::string& adaptorType, const std::string& a
 
 int main(int argc, char* argv[])
 {
-    //ParamManager::instance(); //Initialise the instance!
+    //testing::test_diversity_counting();
+
 
     ModelDriver model; //Empty project so we can setup references / pointers.
     parse_parameters_from_cmd(argc, argv, model); //Throws exception if fails.
     //ParamManager::output_host_susceptibility = true;
     ParamManager::recalculate_derived_parameters();
 
-    //ParamManager::instance().set_bool("output_host_susceptibility", true);
-    //ParamManager::instance().set_bool("unique_initial_strains", true);
-    //ParamManager::instance().set_int("initial_num_strains", 1);
-
-    //ParamManager::instance().set_int("run_time", 5000);
-    //ParamManager::instance().set_int("burn_in_period", 5000);
-    //ParamManager::instance().set_int("output_interval", 50);
-    //ParamManager::instance().set_bool("output_strain_structure", true);
-    //ParamManager::instance().set_float("intragenic_recombination_p", 0.1);
-    //ParamManager::instance().set_bool("output_parasite_adaptedness", true);
-    //ParamManager::instance().add_adaptor(new IntragenicRecombinationPAdaptor(3, 6, 0.5));
-    //ParamManager::instance().recalculate_derived_parameters();
-
-    //ParamManager::instance().set_bool("output_parasite_adaptedness", true);
-    //ParamManager::instance().recalculate_derived_parameters();
-
-    //ParamManager::instance().set_float("cross_immunity", 3);
-    ////ParamManager::instance().set_int("num_phenotypes", 300);
-    //ParamManager::instance().recalculate_derived_parameters();
-    //auto mask = ParamManager::instance().get_immunity_mask();
-    //utilities::arrayToFile(mask, "immunity_mask.csv");
-
-    //Host host;
-    //std::vector<unsigned int> strain1 = {100*128};
-    //host.infect(strain1);
-    //utilities::arrayToFile(host.immuneState, "test_immune_state1.csv");
-
-    //std::vector<unsigned int> strain2 = {150*128};
-    //host.infect(strain2);
-    //utilities::arrayToFile(host.immuneState, "test_immune_state2.csv");
-
-    //for (float f : ParamManager::instance().get_immunity_mask())
-    //    std::cout << f << "\n";
-
     model.run_model();
+
 
     return 0;
 }

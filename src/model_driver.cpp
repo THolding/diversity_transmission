@@ -8,6 +8,10 @@
 #include <vector>
 #include <omp.h>
 
+//toremove:
+#include "diversity_monitor.hpp"
+#include "testing.hpp"
+
 void ModelDriver::initialise_model()
 {
     std::cout << "initialising random number generator" << std::endl;
@@ -93,10 +97,12 @@ void ModelDriver::run_model()
                 std::cout << "burnIn left: " << burnInPeriod << ". ";
         }
 
+        //tmp debug
+        //std::cout << timeElapsed << ": UniqueAntigens: " << DiversityMonitor::get_num_unique_antigens() << "\n";
+
         //Host demographics
         //std::cout << "aging hosts...\n";
         age_hosts();
-        //
 
         //Mosquito demographics
         //std::cout << "aging mosquitoes...\n";
@@ -113,6 +119,9 @@ void ModelDriver::run_model()
         //mosquitoes feed
         //std::cout << "feeding mosquitoes...\n";
         feed_mosquitoes();
+
+        //if appropriate, reintroduce an extinct initial strain.
+        attempt_reintroduction(timeElapsed);
 
         //Update logging / data collection.
         if (timeElapsed == timeNextOutput)
@@ -151,9 +160,6 @@ void ModelDriver::age_mosquitoes()
         if (mosquitoes[i].is_active())
             mosquitoes[i].age_mosquito(pDeathMosquitoes);
     }
-    /*for (Mosquito& mosquito : mosquitoes)
-        if (mosquito.is_active())
-            mosquito.age_mosquito(pDeathMosquitoes);*/
 }
 
 void ModelDriver::update_host_infections()
@@ -163,8 +169,6 @@ void ModelDriver::update_host_infections()
     {
         hosts[i].update_infections();
     }
-    /*for (Host& host : hosts)
-        host.update_infections();*/
 }
 
 void ModelDriver::update_mosquito_infections()
@@ -175,10 +179,6 @@ void ModelDriver::update_mosquito_infections()
         if (mosquitoes[i].is_active())
             mosquitoes[i].update_infection();
     }
-
-    /*for (Mosquito& mosquito : mosquitoes)
-        if (mosquito.is_active())
-            mosquito.update_infection();*/
 }
 
 void ModelDriver::feed_mosquitoes()
@@ -206,24 +206,34 @@ void ModelDriver::feed_mosquitoes()
             }
         }
     }
+}
 
-    /*for (Mosquito& mosquito : mosquitoes)
+//Attempts to reintroduce a strain IF and only if it is time to do so
+//unique_initial_strains == true, static diversity is in use (i.e. intra and intergenic recombination = 0.0)
+void ModelDriver::attempt_reintroduction(const unsigned int time)
+{
+    if (ParamManager::reintroduction_interval != 0 && time % ParamManager::reintroduction_interval == 0)
     {
-        if (mosquito.is_active()) {
-            //Calculate number of times the mosquito feeds.
-            float p = utilities::random_float01()*ParamManager::instance().get_cumulative_bite_frequency_distribution().back();
-            unsigned int numBites = 0;
-            while (p > ParamManager::instance().get_cumulative_bite_frequency_distribution()[numBites])
-                ++numBites;
+        std::cout << "Attempting reintroduction at t=" << time << "\n";
+        if (ParamManager::unique_initial_strains && ParamManager::intragenic_recombination_p == 0.0f && ParamManager::intergenic_recombination_p == 0.0f)
+        {
+            //Choose a random initial strain and if it is extinct try to infect a random mosquito (only works if mosquito is uninfected).
+            unsigned int iS = utilities::random(0, cachedInitialStrainPool.size());
+            Strain strain = cachedInitialStrainPool[iS];
 
-            //For each feed, select a host and feed.
-            for (unsigned int b=0; b<numBites; ++b)
-            {
-                unsigned int iH = utilities::urandom(0, hosts.size());
-                mosquito.feed(hosts[iH], &output, allowRecombination);
+            //If not extinct then ignore this...
+            if (DiversityMonitor::get_antigen_count(get_phenotype_id(strain[0])) != 0)
+                return; //Don't reintroduce strains which aren't extinct!
+
+            unsigned int iM = mManager.random_active_mos();
+            if (mosquitoes[iM].is_infected() == false) {
+                mosquitoes[iM].infect(cachedInitialStrainPool[iS], false, true);
+                std::cout << "Reintroduction successful!\n";
             }
         }
-    }*/
+        else
+            throw std::runtime_error("CANNOT REINTRODUCE INITIAL STRAINS: unique_initial_strains may be false, or intra/intergenic recombination may be non-zero.");
+    }
 }
 
 //Guarentees that each strain generated is unique and non-overlapping, provided there are still unused antigens left during strain creation.
@@ -240,6 +250,8 @@ void ModelDriver::create_unique_initial_strains(std::vector<Strain>& _initialStr
     //Create (unique) strain list
     std::cout << "initialising strain pool" << std::endl;
     _initialStrainPool.reserve(ParamManager::initial_num_strains);
+    cachedInitialStrainPool.clear();
+    cachedInitialStrainPool.reserve(ParamManager::initial_num_strains);
     unsigned int currentIndex=0;
     for (unsigned int s=0; s<ParamManager::initial_num_strains; ++s)
     {
@@ -255,12 +267,15 @@ void ModelDriver::create_unique_initial_strains(std::vector<Strain>& _initialStr
             newStrain.push_back(allAntigens[currentIndex++]);
         }
         _initialStrainPool.push_back(newStrain);
+        cachedInitialStrainPool.push_back(newStrain);
     }
 }
 
 //Generates strains by randomly sampling antigens to form a antigen pool, then randomly sampling the antigen pool to create each strain.
 void ModelDriver::create_random_initial_strains(std::vector<Strain>& _initialStrainPool)
 {
+    cachedInitialStrainPool.clear();
+
     //Generate initial pool of antigen diversity
     std::cout << "initialising antigen pool" << std::endl;
     std::vector<Antigen> initialAntigenPool;
@@ -273,4 +288,57 @@ void ModelDriver::create_random_initial_strains(std::vector<Strain>& _initialStr
     _initialStrainPool.reserve(ParamManager::initial_num_strains);
     for (unsigned int s=0; s<ParamManager::initial_num_strains; ++s)
         _initialStrainPool.push_back(strain_from_antigen_pool(initialAntigenPool));
+}
+
+
+
+//temp todelete
+void ModelDriver::test()
+{
+    ParamManager::num_hosts = 10000;
+    ParamManager::initial_num_mosquitoes = 10000;
+    ParamManager::initial_num_mosquito_infections = 0;//10000;
+    ParamManager::unique_initial_strains = true;
+    ParamManager::intragenic_recombination_p = 0.0f;
+    ParamManager::intergenic_recombination_p = 0.0f;
+    ParamManager::num_phenotypes = 10000;
+    ParamManager::initial_antigen_diversity = 10000;
+    ParamManager::initial_num_strains = 1000;
+    ParamManager::recalculate_derived_parameters();
+    initialise_model();
+
+    unsigned int uniqueCount;
+    unsigned int totalCount;
+    testing::long_diversity_count(uniqueCount, totalCount, hosts, mosquitoes);
+    std::cout << "Mosquitoes infected:\n";
+    std::cout << "Long method: " << uniqueCount << "\t" << totalCount << "\n";
+    std::cout << "Quik method: " << DiversityMonitor::get_num_unique_antigens() << "\t" << DiversityMonitor::get_total_antigens() << "\n";
+
+    for (unsigned int i=0; i<hosts.size(); ++i)
+        hosts[i].infect(cachedInitialStrainPool[utilities::random(0, cachedInitialStrainPool.size())]);
+    testing::long_diversity_count(uniqueCount, totalCount, hosts, mosquitoes);
+    std::cout << "Mosquitoes+hosts infected:\n";
+    std::cout << "Long method: " << uniqueCount << "\t" << totalCount << "\n";
+    std::cout << "Quik method: " << DiversityMonitor::get_num_unique_antigens() << "\t" << DiversityMonitor::get_total_antigens() << "\n";
+
+
+    for (unsigned int i=0; i<10000; ++i)
+    {
+        age_hosts();
+        //age_mosquitoes();
+    }
+    testing::long_diversity_count(uniqueCount, totalCount, hosts, mosquitoes);
+    std::cout << "After loop host+mosquito:\n";
+    std::cout << "Long method: " << uniqueCount << "\t" << totalCount << "\n";
+    std::cout << "Quik method: " << DiversityMonitor::get_num_unique_antigens() << "\t" << DiversityMonitor::get_total_antigens() << "\n";
+
+    //age_hosts();
+    //age_mosquitoes();
+    //update_host_infections();
+    //update_mosquito_infections();
+    //feed_mosquitoes();
+
+
+    //std::cout << "Counted unique antigens: " << uniqueAntigenCount << "\tIncremented antigens: " << DiversityMonitor::get_num_unique_antigens() << "\n";
+    //std::cout << "Counted total antigens:  " << antigenTotal << "\tIncremented antigens: " << DiversityMonitor::get_total_antigens() << "\n";
 }

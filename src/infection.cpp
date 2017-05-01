@@ -8,7 +8,9 @@
 void Infection::reset()
 {
     if (infected) //register loss of antigen abundance
+    {
         DiversityMonitor::register_lost_strain(strain);
+    }
 
     infected = false;
     durationRemaining = 0;

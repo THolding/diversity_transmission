@@ -11,6 +11,9 @@
 #include <sys/types.h>
 #include <omp.h>
 
+//tmp
+#include "testing.hpp"
+
 
 void Output::preinitialise_output_storage()
 {
@@ -216,7 +219,17 @@ void Output::calc_host_mosquito_dependent_metrics(const Hosts& hosts, const Mosq
     {
         hostSusceptibility.push_back(calc_host_susceptibility(DiversityMonitor::get_antigen_counts(), DiversityMonitor::get_total_antigens(), hosts));
     }
+
+    //unsigned int uniqueCount;
+    //unsigned int totalCount;
+    //testing::long_diversity_count(uniqueCount, totalCount, hosts, mosquitoes);
+    //std::cout << "Long method: " << uniqueCount << "\t" << totalCount << "\n";
+    //std::cout << "Quik method: " << DiversityMonitor::get_num_unique_antigens() << "\t" << DiversityMonitor::get_total_antigens() << "\n";
 }
+
+
+
+
 
 float Output::calc_shannon_entropy(const std::vector<unsigned int>& curAntigenFrequency, const unsigned int totalAntigens)//const std::unordered_map<Antigen, const unsigned int>& curAntigenFrequency)
 {

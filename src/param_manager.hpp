@@ -34,6 +34,7 @@ public:
     static unsigned int repertoire_size;
     static unsigned int mean_mosquito_life_expectancy; //In days, Bellan2010.
     static unsigned int mosquito_eip; //Extrinsic inoculation period in days, Deitz1974.
+    static unsigned int reintroduction_interval; //How often is a random extinct initial strain reintroduced? 0 = never. NOTE: only works when intra and inter recombination rate are 0.0, AND unique_initial_strains = 0.
 
     static float bite_rate;
     static float intergenic_recombination_p;
