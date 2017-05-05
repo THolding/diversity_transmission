@@ -102,25 +102,31 @@ void ModelDriver::run_model()
 
         //Host demographics
         //std::cout << "aging hosts...\n";
+        #pragma omp barrier
         age_hosts();
 
         //Mosquito demographics
         //std::cout << "aging mosquitoes...\n";
+        #pragma omp barrier
         age_mosquitoes();
 
         //Update infections in hosts
         //std::cout << "updating host infections...\n";
+        #pragma omp barrier
         update_host_infections();
 
         //Update infections in mosquitoes
         //std::cout << "updating mosquito infections...\n";
+        #pragma omp barrier
         update_mosquito_infections();
 
         //mosquitoes feed
         //std::cout << "feeding mosquitoes...\n";
+        #pragma omp barrier
         feed_mosquitoes();
 
         //if appropriate, reintroduce an extinct initial strain.
+        #pragma omp barrier
         attempt_reintroduction(timeElapsed);
 
         //Update logging / data collection.
@@ -138,6 +144,8 @@ void ModelDriver::run_model()
         ++timeElapsed;
         if (timeElapsed > ParamManager::run_time)
             finished = true;
+
+        #pragma omp barrier
     }
 
     output.export_output();

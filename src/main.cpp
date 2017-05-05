@@ -18,10 +18,13 @@
 
 void parse_parameters_from_cmd(int argc, char* argv[], ModelDriver& model);
 void parse_adaptor_from_cmd(const std::string& adaptorType, const std::string& argList, ModelDriver& model);
+void test();
 
 int main(int argc, char* argv[])
 {
     //testing::test_diversity_counting();
+    //test();
+    //return 0;
 
 
     ModelDriver model; //Empty project so we can setup references / pointers.
@@ -110,3 +113,61 @@ void parse_adaptor_from_cmd(const std::string &adaptorType, const std::string &a
         std::cout << "Added output_interval_adaptor.\n";
     }
 }
+
+void test()
+{
+    ModelDriver model;
+
+    ParamManager::bite_rate = 4.0;
+    ParamManager::run_time = 1000;
+
+    ParamManager::output_interval = 1;//250;
+    ParamManager::burn_in_period = 0;//3000;
+    ParamManager::num_hosts = 1;
+    ParamManager::initial_num_mosquitoes = 1000;
+    ParamManager::initial_antigen_diversity = 60;
+    ParamManager::initial_num_strains = 1;
+    ParamManager::initial_num_mosquito_infections = 500;
+    ParamManager::num_phenotypes = 60;
+    ParamManager::num_genotype_only_bits = 7;
+    ParamManager::genotypic_space_size = std::numeric_limits<unsigned int>::max();
+    ParamManager::repertoire_size = 60;
+    ParamManager::mean_mosquito_life_expectancy = 32; //In days, Bellan2010.
+    ParamManager::mosquito_eip = 10; //Extrinsic inoculation period in days, Deitz1974.
+    ParamManager::reintroduction_interval = 0;
+
+    ParamManager::intergenic_recombination_p = 0.0f;
+    ParamManager::intragenic_recombination_p = 0.0f;
+    ParamManager::recombination_scale = 1.0f;
+    ParamManager::infection_duration_scale = 3.0f;
+    ParamManager::infectivity_scale = 0.5f;
+    ParamManager::cross_immunity = 0.0f;
+    ParamManager::immunityScale = 1.0f;
+    ParamManager::unique_initial_strains = true;
+
+    ParamManager::recalculate_derived_parameters();
+
+    model.run_model();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

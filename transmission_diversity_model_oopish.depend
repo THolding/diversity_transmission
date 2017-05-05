@@ -1993,3 +1993,221 @@
 	"diversity_monitor.hpp"
 	"testing.hpp"
 
+1493455865 source:/media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/adaptors/bite_rate_adaptor.cpp
+	"bite_rate_adaptor.hpp"
+	"../param_manager.hpp"
+	<iostream>
+
+1484062498 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/adaptors/bite_rate_adaptor.hpp
+	"adaptor.hpp"
+
+1484061762 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/adaptors/adaptor.hpp
+	<string>
+
+1493590880 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/param_manager.hpp
+	"adaptors/adaptor.hpp"
+	"global_typedefs.hpp"
+	<array>
+	<list>
+	<string>
+	<unordered_map>
+
+1483710798 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/global_typedefs.hpp
+	<array>
+
+1493455946 source:/media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/adaptors/intragenic_recombination_p_adaptor.cpp
+	"intragenic_recombination_p_adaptor.hpp"
+	"../param_manager.hpp"
+	<iostream>
+
+1487758768 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/adaptors/intragenic_recombination_p_adaptor.hpp
+	"adaptor.hpp"
+
+1493456017 source:/media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/adaptors/mosquito_population_adaptor.cpp
+	"mosquito_population_adaptor.hpp"
+	"../mosquito_manager.hpp"
+	<cmath>
+	<iostream>
+
+1484062330 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/adaptors/mosquito_population_adaptor.hpp
+	"adaptor.hpp"
+
+1484044208 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/mosquito_manager.hpp
+	"mosquito.hpp"
+	<vector>
+
+1493593043 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/mosquito.hpp
+	"infection.hpp"
+	"host.hpp"
+
+1485169638 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/infection.hpp
+	"strain.hpp"
+
+1489590764 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/strain.hpp
+	<vector>
+	"global_typedefs.hpp"
+
+1493455971 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/host.hpp
+	"infection.hpp"
+	"param_manager.hpp"
+
+1493456061 source:/media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/adaptors/output_interval_adaptor.cpp
+	"output_interval_adaptor.hpp"
+	"../param_manager.hpp"
+	<iostream>
+
+1484221326 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/adaptors/output_interval_adaptor.hpp
+	"adaptor.hpp"
+
+1493456173 source:/media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/demographic_tools.cpp
+	"demographic_tools.hpp"
+	"utilities.hpp"
+	"param_manager.hpp"
+	<cmath>
+
+1483710666 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/demographic_tools.hpp
+	"host.hpp"
+	"mosquito.hpp"
+
+1485254846 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/utilities.hpp
+	<array>
+	<fstream>
+	<string>
+	<iostream>
+
+1493977362 source:/media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/diversity_monitor.cpp
+	"diversity_monitor.hpp"
+	"param_manager.hpp"
+	"strain.hpp"
+	<iostream>
+
+1493593143 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/diversity_monitor.hpp
+	<vector>
+	"global_typedefs.hpp"
+
+1493980797 source:/media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/host.cpp
+	"host.hpp"
+	"utilities.hpp"
+	"diversity_monitor.hpp"
+	<cmath>
+	<iostream>
+
+1493635466 source:/media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/infection.cpp
+	"infection.hpp"
+	"param_manager.hpp"
+	"utilities.hpp"
+	"diversity_monitor.hpp"
+	<iostream>
+
+1493977511 source:/media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/model_driver.cpp
+	"model_driver.hpp"
+	"demographic_tools.hpp"
+	"strain.hpp"
+	"utilities.hpp"
+	"param_manager.hpp"
+	<algorithm>
+	<cmath>
+	<vector>
+	<omp.h>
+	"diversity_monitor.hpp"
+	"testing.hpp"
+
+1493631503 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/model_driver.hpp
+	"host.hpp"
+	"output.hpp"
+	"mosquito_manager.hpp"
+
+1493456292 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/output.hpp
+	"host.hpp"
+	"mosquito.hpp"
+
+1493636054 /media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/testing.hpp
+	<vector>
+	"global_typedefs.hpp"
+	"host.hpp"
+	"mosquito.hpp"
+
+1493631436 source:/media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/mosquito.cpp
+	"mosquito.hpp"
+	"output.hpp"
+	"utilities.hpp"
+	"diversity_monitor.hpp"
+	<cmath>
+
+1493456909 source:/media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/mosquito_manager.cpp
+	"mosquito_manager.hpp"
+	"utilities.hpp"
+
+1493977362 source:/media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/output.cpp
+	"output.hpp"
+	"diversity_monitor.hpp"
+	"model_driver.hpp"
+	"strain.hpp"
+	"utilities.hpp"
+	<cmath>
+	<sstream>
+	<numeric>
+	<unordered_map>
+	<sys/stat.h>
+	<sys/types.h>
+	<omp.h>
+	"testing.hpp"
+
+1493623091 source:/media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/param_manager.cpp
+	"param_manager.hpp"
+	"mosquito.hpp"
+	"utilities.hpp"
+	"adaptors/output_interval_adaptor.hpp"
+	"diversity_monitor.hpp"
+	<cmath>
+	<limits>
+	<algorithm>
+	<iostream>
+	<omp.h>
+
+1493467300 source:/media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/strain.cpp
+	"strain.hpp"
+	"param_manager.hpp"
+	"utilities.hpp"
+	<sstream>
+	<algorithm>
+
+1493636041 source:/media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/testing.cpp
+	"testing.hpp"
+	"host.hpp"
+	"strain.hpp"
+	"infection.hpp"
+	"mosquito.hpp"
+	"utilities.hpp"
+	"output.hpp"
+	"demographic_tools.hpp"
+	<iostream>
+	<vector>
+	"model_driver.hpp"
+	"global_typedefs.hpp"
+
+1493467327 source:/media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/utilities.cpp
+	"utilities.hpp"
+	"param_manager.hpp"
+	<cstdlib>
+	<ctime>
+	<cmath>
+	<stdexcept>
+
+1493980087 source:/media/rr/ToemStick62/Workspace/PhD/Chapters/03. diversity transmission/Model/cpp/transmission_diversity_model_openmp/src/main.cpp
+	<iostream>
+	"param_manager.hpp"
+	"model_driver.hpp"
+	"testing.hpp"
+	"utilities.hpp"
+	<fstream>
+	<sstream>
+	<limits>
+	"adaptors/mosquito_population_adaptor.hpp"
+	"adaptors/bite_rate_adaptor.hpp"
+	"adaptors/output_interval_adaptor.hpp"
+	"adaptors/intragenic_recombination_p_adaptor.hpp"
+	"diversity_monitor.hpp"
+	"host.hpp"
+	"output.hpp"
+
