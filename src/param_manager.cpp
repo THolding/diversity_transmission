@@ -198,6 +198,8 @@ void ParamManager::set_param(const std::string name, const std::string value)
         mean_mosquito_life_expectancy = std::stoi(value);
     else if (name == "mosquito_eip")
         mosquito_eip = std::stoi(value);
+    else if (name == "reintroduction_interval")
+        reintroduction_interval = std::stoi(value);
 
     else if (name == "bite_rate")
         bite_rate = std::stof(value);

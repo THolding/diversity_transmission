@@ -217,26 +217,28 @@ void ModelDriver::feed_mosquitoes()
 }
 
 //Attempts to reintroduce a strain IF and only if it is time to do so
-//unique_initial_strains == true, static diversity is in use (i.e. intra and intergenic recombination = 0.0)
+//unique_initial_strains == true
+//Only reintroduces a strain if any of it's antigens are extinct
 void ModelDriver::attempt_reintroduction(const unsigned int time)
 {
     if (ParamManager::reintroduction_interval != 0 && time % ParamManager::reintroduction_interval == 0)
     {
-        std::cout << "Attempting reintroduction at t=" << time << "\n";
-        if (ParamManager::unique_initial_strains && ParamManager::intragenic_recombination_p == 0.0f && ParamManager::intergenic_recombination_p == 0.0f)
+        //std::cout << "Attempting reintroduction at t=" << time << "\n";
+        if (ParamManager::unique_initial_strains)
         {
             //Choose a random initial strain and if it is extinct try to infect a random mosquito (only works if mosquito is uninfected).
             unsigned int iS = utilities::random(0, cachedInitialStrainPool.size());
             Strain strain = cachedInitialStrainPool[iS];
 
             //If not extinct then ignore this...
-            if (DiversityMonitor::get_antigen_count(get_phenotype_id(strain[0])) != 0)
-                return; //Don't reintroduce strains which aren't extinct!
-
-            unsigned int iM = mManager.random_active_mos();
-            if (mosquitoes[iM].is_infected() == false) {
-                mosquitoes[iM].infect(cachedInitialStrainPool[iS], false, true);
-                std::cout << "Reintroduction successful!\n";
+            for (Antigen a : strain) {
+                if (DiversityMonitor::get_antigen_count(get_phenotype_id(strain[0])) == 0) {
+                    unsigned int iM = mManager.random_active_mos();
+                    if (mosquitoes[iM].is_infected() == false) {
+                        mosquitoes[iM].infect(cachedInitialStrainPool[iS], false, true);
+                        //std::cout << "Reintroduction successful!\n";
+                    }
+                }
             }
         }
         else
